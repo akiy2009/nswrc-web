@@ -1,6 +1,7 @@
 [
   {
     "date": "2026-11-13",
+    "slug": "markdown-preview-test",
     "category": "お知らせ",
     "title": "【表示テスト】Markdown表示確認のお知らせ",
     "summary": "これはサイトのMarkdown表示を確認するための一時的なテスト記事です。確認後に削除してください。",
