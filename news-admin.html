@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#ffffff"><meta name="description" content="研究会管理者向けニュース原稿作成画面。"><title>ニュース作成 | 全国学生無線通信研究会</title><script>document.documentElement.classList.add("js");</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"></head>
+<body><a class="skip-link" href="#main">本文へ移動</a><header class="header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="全国学生無線通信研究会 トップページ">
+      <span class="brand-name">全国学生無線通信研究会</span>
+      <span class="brand-en">NATIONAL STUDENT RADIO COMMUNICATION RESEARCH ASSOCIATION</span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="global-nav" aria-label="メニューを開く"><span></span><span></span></button>
+    <nav class="nav" id="global-nav" aria-label="メインメニュー">
+      <a href="index.html#about">研究会について</a><a href="index.html#activities">活動内容</a><a href="index.html#policy">活動方針</a><a href="news.html">お知らせ</a><a class="nav-entry" href="contact.html">お問い合わせ</a>
+    </nav>
+  </div>
+</header><main id="main"><div class="breadcrumb"><div class="container"><a href="index.html">トップ</a>　/　ニュース作成</div></div><section class="page-hero"><div class="container"><p class="eyebrow">NEWS EDITOR</p><h1>ニュース作成</h1><p>掲載するニュースの原稿を作成し、JSONデータとして書き出すための管理補助画面です。</p></div></section>
+<section class="page-content"><div class="container"><div class="admin-warning">管理者向けの補助画面です。ここで作成した内容は自動で公開されません。JSONを確認し、GitHub上のニュースデータへ反映して初めて公開されます。公開前に必ず内容・日付・個人情報を確認してください。</div>
+<div class="form-layout"><div class="form-panel"><h2>ニュース情報</h2><p class="form-intro">タイトル・日付・カテゴリ・本文を入力してください。</p>
+<form id="news-form">
+<div class="form-field"><label for="news-date">公開日<span class="required">必須</span></label><input id="news-date" type="date" required></div>
+<div class="form-field"><label for="news-category">カテゴリ<span class="required">必須</span></label><select id="news-category" required><option value="">選択してください</option><option>お知らせ</option><option>イベント</option><option>活動報告</option><option>募集</option></select></div>
+<div class="form-field"><label for="news-title">タイトル<span class="required">必須</span></label><input id="news-title" maxlength="100" required></div>
+<div class="form-field"><label for="news-summary">概要<span class="required">必須</span></label><textarea id="news-summary" minlength="10" maxlength="500" required></textarea><span class="form-help">一覧ページに表示する短い説明です。</span></div>
+<div class="form-field"><label for="news-body">本文（任意）</label><textarea id="news-body" maxlength="5000"></textarea></div>
+<div class="admin-actions"><button class="form-submit" type="submit">プレビューを作成</button><button class="button-secondary" type="button" id="download-news" disabled>JSONをダウンロード</button></div></form>
+<div class="preview-box" id="news-preview" hidden><h3>プレビュー / 書き出しデータ</h3><pre id="news-json"></pre></div></div>
+<aside class="side-note"><h3>公開手順</h3><ul><li>ニュース情報を入力してプレビューを確認</li><li>JSONをダウンロード</li><li>管理者が内容を確認</li><li>サイトのニュースデータに反映してGitHubへコミット</li></ul><p>この画面にはログイン認証や公開権限管理はありません。URLを知っている人が画面を開けるため、公開操作や機密情報の保存には使用しないでください。</p></aside></div></div></section></main><footer class="footer">
+  <div class="container footer-main"><a class="footer-brand" href="index.html">全国学生無線通信研究会</a>
+    <nav aria-label="フッターメニュー"><a href="index.html#about">研究会について</a><a href="index.html#activities">活動内容</a><a href="news.html">お知らせ</a><a href="contact.html">お問い合わせ</a></nav>
+  </div><div class="container footer-bottom"><span>© 全国学生無線通信研究会</span><a href="#top">ページ上部へ ↑</a></div>
+</footer><script>
+const toggle=document.querySelector('.menu-toggle');const nav=document.querySelector('.nav');
+const closeMenu=(focus=false)=>{nav.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','メニューを開く');if(focus)toggle.focus();};
+toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));toggle.setAttribute('aria-label',open?'メニューを開く':'メニューを閉じる');nav.classList.toggle('is-open',!open);});
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>closeMenu()));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&toggle.getAttribute('aria-expanded')==='true')closeMenu(true);});
+document.addEventListener('click',e=>{if(toggle.getAttribute('aria-expanded')==='true'&&!nav.contains(e.target)&&!toggle.contains(e.target))closeMenu();});
+window.addEventListener('resize',()=>{if(window.innerWidth>760)closeMenu();});
+</script><script>
+let currentNews=null;const form=document.getElementById('news-form');const download=document.getElementById('download-news');
+form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;currentNews={date:document.getElementById('news-date').value,category:document.getElementById('news-category').value,title:document.getElementById('news-title').value.trim(),summary:document.getElementById('news-summary').value.trim(),body:document.getElementById('news-body').value.trim()};document.getElementById('news-json').textContent=JSON.stringify(currentNews,null,2);document.getElementById('news-preview').hidden=false;download.disabled=false;});
+download.addEventListener('click',()=>{if(!currentNews)return;const blob=new Blob([JSON.stringify(currentNews,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='news-'+currentNews.date+'.json';a.click();URL.revokeObjectURL(url);});
+</script></body></html>
