@@ -18,7 +18,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/nswrc-logo.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body><div class="site-loader" id="site-loader" role="status" aria-live="polite"><div class="loader-emblem"><img src="assets/nswrc-logo.svg" alt=""><span class="loader-ring"></span></div><p class="loader-wordmark">NATIONAL STUDENT RADIO COMMUNICATION RESEARCH ASSOCIATION</p><p class="loader-caption">CONNECTING STUDENTS THROUGH RADIO</p><div class="loader-progress"><span></span></div></div>
   <a class="skip-link" href="#main">本文へ移動</a>
   <header class="header">
     <div class="container header-inner">
@@ -168,5 +168,5 @@
       if (window.innerWidth > 760) closeMenu();
     });
   </script>
-</body>
+<script>(()=>{const el=document.getElementById("site-loader");if(!el)return;let done=false;const start=performance.now();const hide=()=>{if(done)return;done=true;setTimeout(()=>{el.classList.add("is-hidden");setTimeout(()=>el.remove(),650);},Math.max(0,520-(performance.now()-start)));};if(document.readyState==="complete")hide();else addEventListener("load",hide,{once:true});setTimeout(hide,3000);})();</script></body>
 </html>
