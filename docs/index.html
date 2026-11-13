@@ -3,116 +3,136 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f4ef">
-  <meta name="description" content="全国学生無線通信研究会。学校や地域を越えて、学生無線家がつながり、交信し、学び合うネットワーク。">
-  <title>全国学生無線通信研究会 — Student Radio Network</title>
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="全国学生無線通信研究会は、学校や地域を越えた学生無線家の交流と技術活動を支えるネットワークです。">
+  <title>全国学生無線通信研究会 | 公式サイト</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <a class="skip" href="#main">本文へ移動</a>
-  <div class="utility"><div class="wrap utility-in"><span>STUDENT RADIO COMMUNICATION NETWORK</span><span>全国学生無線通信研究会 <i>／</i> OFFICIAL WEBSITE</span></div></div>
-  <header class="site-header">
-    <div class="wrap header-in">
-      <a class="identity" href="#top" aria-label="全国学生無線通信研究会 トップ">
-        <span class="identity-symbol"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5v38M15 14a13 13 0 0 0 0 20M33 14a13 13 0 0 1 0 20M8 7a23 23 0 0 0 0 34M40 7a23 23 0 0 1 0 34"/><circle cx="24" cy="5" r="2.2"/></svg></span>
-        <span class="identity-type"><b>NSRCRA</b><small>全国学生無線通信研究会</small></span>
+  <a class="skip-link" href="#main">本文へ移動</a>
+  <header class="header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="全国学生無線通信研究会 トップページ">
+        <span class="brand-name">全国学生無線通信研究会</span>
+        <span class="brand-en">NATIONAL STUDENT RADIO COMMUNICATION RESEARCH ASSOCIATION</span>
       </a>
-      <button class="menu-button" aria-expanded="false" aria-controls="primary-nav" aria-label="メニューを開く"><span></span><span></span></button>
-      <nav id="primary-nav" class="primary-nav" aria-label="メインナビゲーション">
-        <a href="#about">研究会について</a><a href="#activities">活動・取り組み</a><a href="#network">ネットワーク</a><a href="#join" class="nav-contact">参加・お問い合わせ <span>↗</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="global-nav" aria-label="メニューを開く">
+        <span></span><span></span>
+      </button>
+      <nav class="nav" id="global-nav" aria-label="メインメニュー">
+        <a href="#about">研究会について</a>
+        <a href="#activities">活動内容</a>
+        <a href="#policy">活動方針</a>
+        <a class="nav-entry" href="#join">参加について</a>
       </nav>
     </div>
   </header>
 
   <main id="main">
     <section class="hero" id="top">
-      <div class="wrap hero-layout">
+      <div class="container hero-inner">
         <div class="hero-copy">
-          <div class="eyebrow"><span class="live-dot"></span> A NATIONAL COMMUNITY FOR STUDENT RADIO</div>
-          <h1>電波の向こうに、<br><em>仲間がいる。</em></h1>
-          <p class="hero-lead">学校も、地域も、経験も越えて。<br>学生無線家がつながり、交信し、学び合う。</p>
-          <div class="hero-actions"><a class="button button-dark" href="#about">研究会について <span>↘</span></a><a class="text-link" href="#activities">活動を見る <span>→</span></a></div>
-          <div class="hero-footnote"><span>01 — CONNECT</span><span>JAPAN / STUDENT RADIO COMMUNITY</span></div>
+          <p class="eyebrow">全国学生無線通信研究会</p>
+          <h1>学生の無線活動を、<br>つなぐ。</h1>
+          <p class="hero-description">学校や地域の枠を越えて、学生無線家が交流し、知識や経験を共有する。<br class="desktop-only">全国の学生による無線通信活動を支えるネットワークです。</p>
+          <div class="hero-links">
+            <a class="button button-primary" href="#about">研究会について <span aria-hidden="true">›</span></a>
+            <a class="button button-text" href="#activities">活動内容を見る <span aria-hidden="true">›</span></a>
+          </div>
         </div>
-        <div class="hero-visual" aria-label="電波の交差とつながりを表現したグラフィック">
-          <div class="visual-top"><span>NETWORK STUDY / 001</span><span>ON AIR</span></div>
-          <svg class="signal-svg" viewBox="0 0 620 560" role="img" aria-hidden="true">
-            <defs><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#d9d8d0" stroke-width="1"/></pattern><linearGradient id="fade" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#e7e5dc"/><stop offset="1" stop-color="#f5f4ef"/></linearGradient></defs>
-            <rect width="620" height="560" fill="url(#fade)"/><rect width="620" height="560" fill="url(#grid)"/>
-            <g fill="none" stroke="#182b35" stroke-width="1.5" opacity=".78"><path d="M-20 355 C85 355 90 115 205 115 S315 445 420 445 520 210 650 210"/><path d="M-20 385 C90 385 100 145 205 145 S315 475 420 475 530 240 650 240" opacity=".3"/><path d="M-20 325 C85 325 90 85 205 85 S315 415 420 415 520 180 650 180" opacity=".3"/></g>
-            <g fill="none" stroke="#d84b32" stroke-width="2"><path d="M70 0V560M205 0V560M420 0V560M0 280H620" stroke-dasharray="3 8" opacity=".65"/></g>
-            <g fill="#d84b32"><circle cx="205" cy="115" r="6"/><circle cx="420" cy="445" r="6"/><circle cx="70" cy="355" r="5"/></g>
-            <g fill="#182b35" font-family="DM Mono, monospace" font-size="10" letter-spacing="1.5"><text x="84" y="337">CALL / 01</text><text x="220" y="96">SIGNAL / 02</text><text x="435" y="425">LINK / 03</text><text x="30" y="520">144.000 MHz</text><text x="470" y="520">CQ CQ CQ</text></g>
-            <g transform="translate(310 278)"><circle r="72" fill="#182b35"/><circle r="58" fill="none" stroke="#f5f4ef" stroke-opacity=".35"/><path d="M-31 0h62M0-31v62" stroke="#f5f4ef" stroke-opacity=".5"/><text y="10" fill="#fff" font-family="DM Sans, sans-serif" font-size="38" font-weight="800" text-anchor="middle">CQ</text></g>
-          </svg>
-          <div class="visual-caption"><span>FIG. 01</span><span>FROM ONE STATION TO ANOTHER</span></div>
-          <div class="visual-stamp">学生<br>無線</div>
+        <div class="hero-aside" aria-label="研究会の基本情報">
+          <p class="aside-label">OUR PURPOSE</p>
+          <p class="aside-title">交流・技術・協力</p>
+          <p class="aside-text">学生無線家同士のつながりを育て、個々の活動と学びを全国へ広げます。</p>
+          <div class="aside-rule"></div>
+          <p class="aside-caption">STUDENT RADIO COMMUNITY IN JAPAN</p>
         </div>
       </div>
-      <div class="hero-bottom"><div class="wrap"><span>SCROLL TO DISCOVER</span><span class="scroll-line"></span><span>02 / 04</span></div></div>
+      <div class="hero-bottom"><div class="container"><span>全国の学生無線家をつなぐ</span><span class="hero-line"></span><span>OFFICIAL WEBSITE</span></div></div>
     </section>
 
-    <section class="intro section" id="about">
-      <div class="wrap">
-        <div class="section-kicker"><span>01</span><span>ABOUT THE ASSOCIATION</span></div>
-        <div class="intro-grid">
-          <h2>無線を、<br>もっと自由に。<br><span>もっと身近に。</span></h2>
-          <div class="intro-body"><p class="intro-statement">全国学生無線通信研究会は、学生無線家が学校や地域を越えて交流するためのネットワークです。</p><p>無線通信を楽しむ人、技術を探究する人、これから始める人。それぞれの関心を持ち寄り、交信や情報交換、共同企画を通じて、学生ならではの活動の可能性を広げていきます。</p><a class="under-link" href="#join">研究会への参加について <span>↗</span></a></div>
+    <section class="section about" id="about">
+      <div class="container">
+        <div class="section-heading">
+          <p class="section-en">ABOUT US</p>
+          <h2>研究会について</h2>
         </div>
-        <div class="values">
-          <article><span class="value-no">A</span><div><small>CONNECT</small><h3>つながる</h3><p>地域や学校の垣根を越え、同じ趣味を持つ仲間と出会う。</p></div></article>
-          <article><span class="value-no">B</span><div><small>EXPLORE</small><h3>探究する</h3><p>通信技術や電子工作、運用の工夫を共有し、知識を深める。</p></div></article>
-          <article><span class="value-no">C</span><div><small>CREATE</small><h3>一緒につくる</h3><p>個人や学校だけでは難しい企画を、仲間と形にする。</p></div></article>
+        <div class="about-content">
+          <h3>学校や地域を越えた、<br>学生無線家の交流拠点。</h3>
+          <div class="about-text">
+            <p>全国学生無線通信研究会は、無線通信に関心を持つ学生が、所属する学校や地域を越えて交流するためのネットワークです。</p>
+            <p>日々の無線運用から技術研究、電子工作、イベントの企画まで。それぞれの経験や知識を共有し、学生ならではの活動を広げていくことを目指しています。</p>
+          </div>
         </div>
-      </div>
-    </section>
-
-    <section class="activities section" id="activities">
-      <div class="wrap">
-        <div class="activities-heading"><div><div class="section-kicker"><span>02</span><span>WHAT WE DO</span></div><h2>活動・取り組み</h2></div><p>交信から研究、交流イベントまで。<br>それぞれの「やってみたい」を活動につなげます。</p></div>
-        <div class="activity-rows">
-          <article><span class="row-no">01</span><div class="row-title"><small>ON AIR / QSO</small><h3>学生局ロールコール</h3></div><p>学生局同士で交信し、近況や活動を共有。全国の仲間と声をつなぎます。</p><span class="row-arrow">↗</span></article>
-          <article><span class="row-no">02</span><div class="row-title"><small>MEETUP / EVENT</small><h3>交流・合同運用</h3></div><p>交流会や合同運用、勉強会など、学校を越えて参加できる機会をつくります。</p><span class="row-arrow">↗</span></article>
-          <article><span class="row-no">03</span><div class="row-title"><small>ENGINEERING / STUDY</small><h3>技術交流・研究発表</h3></div><p>アンテナ、通信方式、電子工作など、技術や研究成果を持ち寄ります。</p><span class="row-arrow">↗</span></article>
-          <article><span class="row-no">04</span><div class="row-title"><small>COMMUNITY / NETWORK</small><h3>学生無線家ネットワーク</h3></div><p>地域ごとの活動や情報をつなぎ、新しい協力や共同企画のきっかけをつくります。</p><span class="row-arrow">↗</span></article>
+        <div class="facts">
+          <div class="fact"><span class="fact-number">01</span><div><h4>学生主体</h4><p>学生が中心となり、主体的に活動を企画・運営します。</p></div></div>
+          <div class="fact"><span class="fact-number">02</span><div><h4>全国交流</h4><p>学校や地域の違いを越えて、情報や経験を共有します。</p></div></div>
+          <div class="fact"><span class="fact-number">03</span><div><h4>技術の共有</h4><p>無線通信に関する知識や技術を学び合います。</p></div></div>
         </div>
       </div>
     </section>
 
-    <section class="feature">
-      <div class="wrap feature-grid">
-        <div class="feature-art"><div class="feature-art-label">COMMUNITY PROJECT / 001</div><div class="feature-big">CQ<span>!</span></div><div class="feature-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="feature-art-bottom"><span>CALLING ALL STUDENT STATIONS</span><span>JAPAN / 2026</span></div></div>
-        <div class="feature-copy"><div class="section-kicker inverse"><span>03</span><span>FEATURED INITIATIVE</span></div><p class="feature-label">STUDENT RADIO EXCHANGE</p><h2>Campus<br>Radio Link</h2><p>学生無線局同士が電波でつながる交流企画。普段は離れた場所にいる仲間と、同じ時間にオンエアで出会う機会をつくります。</p><a class="feature-link" href="#join">企画について問い合わせる <span>↗</span></a><small>※開催情報・参加方法は決まり次第お知らせします。</small></div>
+    <section class="section activities" id="activities">
+      <div class="container">
+        <div class="section-heading heading-row">
+          <div><p class="section-en">ACTIVITIES</p><h2>活動内容</h2></div>
+          <p class="heading-note">交流と技術活動を通じて、<br>学生無線家のネットワークを広げます。</p>
+        </div>
+        <div class="activity-list">
+          <article class="activity-item"><span class="activity-no">01</span><div class="activity-main"><h3>学生局の交信・情報交換</h3><p>学生無線局同士の交信を通じて、活動状況や運用情報を共有します。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
+          <article class="activity-item"><span class="activity-no">02</span><div class="activity-main"><h3>交流会・合同運用</h3><p>学校や地域を越えた交流の機会を設け、共同での無線運用やイベントに取り組みます。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
+          <article class="activity-item"><span class="activity-no">03</span><div class="activity-main"><h3>技術研究・知識共有</h3><p>無線通信、アンテナ、電子工作などに関する技術や研究成果を共有します。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
+          <article class="activity-item"><span class="activity-no">04</span><div class="activity-main"><h3>学生無線家ネットワークの形成</h3><p>各地の学生や団体の活動をつなぎ、継続的な協力関係の構築を目指します。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
+        </div>
       </div>
     </section>
 
-    <section class="network section" id="network">
-      <div class="wrap network-grid">
-        <div><div class="section-kicker"><span>04</span><span>OUR NETWORK</span></div><h2>ひとつの地域から、<br><em>全国へ。</em></h2><p>学生無線家の活動は、全国各地に広がっています。学校・地域を越えたつながりを育て、互いの活動を知ることから、新しい交流が始まります。</p><a class="under-link" href="#join">ネットワークへの参加 <span>↗</span></a></div>
-        <div class="network-visual"><div class="network-map"><svg viewBox="0 0 620 370" aria-hidden="true"><g fill="none" stroke="#c8c8bf" stroke-width="1"><path d="M310 18L310 350M70 185H550M140 60L480 310M480 60L140 310"/></g><g fill="none" stroke="#d84b32" stroke-width="1.6" stroke-dasharray="4 7"><path d="M120 95Q300 165 500 90M120 95Q280 260 360 300M500 90Q430 230 360 300M120 95Q170 200 240 240"/></g><g fill="#d84b32"><circle cx="120" cy="95" r="6"/><circle cx="500" cy="90" r="6"/><circle cx="360" cy="300" r="6"/><circle cx="240" cy="240" r="6"/></g><g fill="#182b35"><circle cx="310" cy="185" r="24"/><circle cx="310" cy="185" r="34" fill="none" stroke="#182b35" stroke-opacity=".2"/><circle cx="310" cy="185" r="46" fill="none" stroke="#182b35" stroke-opacity=".12"/></g><g fill="#182b35" font-family="DM Mono,monospace" font-size="10"><text x="80" y="78">NORTH</text><text x="460" y="72">EAST</text><text x="345" y="328">SOUTH</text><text x="200" y="263">WEST</text></g><text x="310" y="190" fill="#fff" font-family="DM Sans,sans-serif" font-size="12" font-weight="700" text-anchor="middle">LINK</text></svg></div><div class="network-note"><span>NETWORK CONCEPT</span><span>CONNECT / SHARE / GROW</span></div></div>
+    <section class="section policy" id="policy">
+      <div class="container">
+        <div class="section-heading">
+          <p class="section-en">OUR POLICY</p>
+          <h2>活動方針</h2>
+        </div>
+        <div class="policy-grid">
+          <article><span>01</span><h3>開かれた交流</h3><p>経験や所属にかかわらず、学生が互いに学び合える関係を大切にします。</p></article>
+          <article><span>02</span><h3>実践を通じた学び</h3><p>実際の運用やものづくりを通じて、無線通信への理解を深めます。</p></article>
+          <article><span>03</span><h3>継続的な協力</h3><p>個々の活動を尊重しながら、団体間の連携と協力を進めます。</p></article>
+        </div>
       </div>
     </section>
 
-    <section class="join" id="join"><div class="wrap join-grid"><div><div class="section-kicker inverse"><span>05</span><span>GET INVOLVED</span></div><h2>次のつながりを、<br>ここから。</h2></div><div><p>研究会への参加、活動についての質問、イベントや技術交流の相談など、お気軽にお問い合わせください。</p><a class="join-button" href="mailto:contact@example.org">お問い合わせ <span>↗</span></a><small>※公開前に正式な連絡先へ変更してください。</small></div></div></section>
+    <section class="join" id="join">
+      <div class="container join-inner">
+        <div><p class="section-en">JOIN THE NETWORK</p><h2>学生無線家の交流を、<br>ともに広げていく。</h2></div>
+        <div class="join-copy"><p>研究会の活動や参加方法に関する情報は、準備が整い次第、本サイトでご案内します。</p><span class="join-note">参加窓口・連絡先は現在準備中です。</span></div>
+      </div>
+    </section>
   </main>
 
-  <footer class="footer"><div class="wrap footer-main"><a class="identity footer-identity" href="#top"><span class="identity-symbol"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5v38M15 14a13 13 0 0 0 0 20M33 14a13 13 0 0 1 0 20M8 7a23 23 0 0 0 0 34M40 7a23 23 0 0 1 0 34"/><circle cx="24" cy="5" r="2.2"/></svg></span><span class="identity-type"><b>NSRCRA</b><small>全国学生無線通信研究会</small></span></a><p>電波の向こうに、仲間がいる。</p><nav><a href="#about">研究会について</a><a href="#activities">活動内容</a><a href="#network">ネットワーク</a><a href="#join">お問い合わせ</a></nav></div><div class="wrap footer-bottom"><span>© NATIONAL STUDENT RADIO COMMUNICATION RESEARCH ASSOCIATION</span><span>OFFICIAL WEBSITE</span></div></footer>
+  <footer class="footer">
+    <div class="container footer-main">
+      <a class="footer-brand" href="#top">全国学生無線通信研究会</a>
+      <nav aria-label="フッターメニュー"><a href="#about">研究会について</a><a href="#activities">活動内容</a><a href="#policy">活動方針</a><a href="#join">参加について</a></nav>
+    </div>
+    <div class="container footer-bottom"><span>© 全国学生無線通信研究会</span><a href="#top">ページ上部へ ↑</a></div>
+  </footer>
+
   <script>
-    const menuButton = document.querySelector('.menu-button');
-    const nav = document.querySelector('.primary-nav');
-    menuButton.addEventListener('click', () => {
-      const open = menuButton.getAttribute('aria-expanded') === 'true';
-      menuButton.setAttribute('aria-expanded', String(!open));
-      menuButton.setAttribute('aria-label', open ? 'メニューを開く' : 'メニューを閉じる');
-      nav.classList.toggle('is-open', !open);
+    const toggle = document.querySelector('.menu-toggle');
+    const nav = document.querySelector('.nav');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      toggle.setAttribute('aria-label', expanded ? 'メニューを開く' : 'メニューを閉じる');
+      nav.classList.toggle('is-open', !expanded);
     });
-    nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+    nav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
       nav.classList.remove('is-open');
-      menuButton.setAttribute('aria-expanded', 'false');
-      menuButton.setAttribute('aria-label', 'メニューを開く');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'メニューを開く');
     }));
   </script>
 </body>
