@@ -479,3 +479,53 @@ a { color: inherit; text-decoration: none; }
   .contact-page .form-panel { padding: 22px 15px; }
   .contact-page .side-note { padding: 20px 15px; }
 }
+
+
+/* Participation guide */
+.join-page .join-guide{padding-top:72px}
+.join-intro{display:grid;grid-template-columns:1fr 1fr;gap:9%;align-items:end;padding:0 0 42px;border-bottom:1px solid var(--line)}
+.join-intro h2{margin:12px 0 0;color:var(--navy);font-size:clamp(23px,3vw,32px);line-height:1.6}
+.join-intro>p{margin:0;color:#53616e;font-size:13px;line-height:2.15}
+.join-block{padding:66px 0 0}
+.join-block-heading{margin-bottom:28px}
+.join-block-heading h2{margin:9px 0 0;color:var(--navy);font-size:24px;line-height:1.6}
+.join-audience-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.join-audience{min-width:0;padding:25px 25px 27px 0}
+.join-audience+.join-audience{padding-left:25px;border-left:1px solid var(--line)}
+.join-index,.join-flow-number{color:var(--blue);font-size:12px;font-weight:700;letter-spacing:.08em}
+.join-audience h3{margin:14px 0 10px;color:var(--navy);font-size:16px;line-height:1.7}
+.join-audience p,.join-way p,.join-flow p{margin:0;color:var(--muted);font-size:12px;line-height:2}
+.join-caveat{margin:13px 0 0;color:#7a8792;font-size:10px;line-height:1.8}
+.join-ways{border-top:1px solid var(--line)}
+.join-way{display:grid;grid-template-columns:58px minmax(0,1fr);gap:18px;padding:23px 8px;border-bottom:1px solid var(--line)}
+.join-way-no{display:flex;width:38px;height:38px;align-items:center;justify-content:center;color:var(--navy);background:var(--light);font-size:13px;font-weight:700}
+.join-way h3,.join-flow h3{margin:0 0 7px;color:var(--navy);font-size:15px}
+.join-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;padding:0;list-style:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.join-flow li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:24px 20px 24px 0}
+.join-flow li+li{padding-left:20px;border-left:1px solid var(--line)}
+.join-flow h3{margin-top:2px;line-height:1.7}
+.join-flow a{display:inline-block;margin-top:10px;color:var(--blue);font-size:11px;font-weight:700}
+.join-faq{padding-top:70px}
+.join-faq details{border-top:1px solid var(--line)}
+.join-faq details:last-child{border-bottom:1px solid var(--line)}
+.join-faq summary{position:relative;padding:20px 42px 20px 4px;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;list-style:none}
+.join-faq summary::-webkit-details-marker{display:none}
+.join-faq summary:after{position:absolute;top:50%;right:8px;color:var(--blue);content:"+";font-size:22px;font-weight:400;transform:translateY(-50%)}
+.join-faq details[open] summary:after{content:"−"}
+.join-faq details p{max-width:850px;margin:0;padding:0 36px 21px 4px;color:var(--muted);font-size:12px;line-height:2}
+.join-contact-panel{display:grid;grid-template-columns:1.1fr .9fr;gap:8%;align-items:center;margin-top:76px;padding:38px 42px;color:#fff;background:var(--navy)}
+.join-contact-panel .section-en{color:#b8d1e5}
+.join-contact-panel h2{margin:12px 0;font-size:clamp(22px,2.8vw,30px);line-height:1.6}
+.join-contact-panel p{margin:0;color:#e0e8ef;font-size:12px;line-height:2}
+.join-contact-actions .button{width:100%}
+.join-contact-actions>p{margin-top:12px;color:#c7d5e2;font-size:10px}
+.join-home-link{display:inline-block;margin-top:15px;padding-bottom:5px;color:#fff;border-bottom:1px solid #9bb8ce;font-size:12px;font-weight:700}
+@media(max-width:760px){
+.join-page .join-guide{padding-top:48px}.join-intro{grid-template-columns:1fr;gap:14px;padding-bottom:28px}.join-intro h2{font-size:23px}.join-intro>p{font-size:12px}
+.join-block{padding-top:48px}.join-block-heading h2{font-size:20px}.join-audience-grid{grid-template-columns:1fr}
+.join-audience,.join-audience+.join-audience{padding:19px 0;border-left:0}.join-audience+.join-audience{border-top:1px solid var(--line)}
+.join-audience h3{margin:8px 0;font-size:15px}.join-way{grid-template-columns:42px minmax(0,1fr);gap:10px;padding:19px 0}
+.join-flow{grid-template-columns:1fr}.join-flow li,.join-flow li+li{padding:20px 4px;border-left:0}.join-flow li+li{border-top:1px solid var(--line)}
+.join-faq{padding-top:50px}.join-faq summary{font-size:12px}.join-contact-panel{grid-template-columns:1fr;gap:22px;margin-top:52px;padding:27px 22px}
+}
+@media(max-width:380px){.join-contact-panel{padding:23px 17px}.join-flow li{grid-template-columns:28px minmax(0,1fr);gap:8px}}
