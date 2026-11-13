@@ -4,8 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:site_name" content="全国学生無線通信研究会">
+  <meta property="og:title" content="全国学生無線通信研究会 | 公式サイト">
+  <meta property="og:description" content="学校や地域を越えた学生無線家の交流と技術活動を支えるネットワークです。">
   <meta name="description" content="全国学生無線通信研究会は、学校や地域を越えた学生無線家の交流と技術活動を支えるネットワークです。">
   <title>全国学生無線通信研究会 | 公式サイト</title>
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -82,10 +88,10 @@
           <p class="heading-note">交流と技術活動を通じて、<br>学生無線家のネットワークを広げます。</p>
         </div>
         <div class="activity-list">
-          <article class="activity-item"><span class="activity-no">01</span><div class="activity-main"><h3>学生局の交信・情報交換</h3><p>学生無線局同士の交信を通じて、活動状況や運用情報を共有します。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
-          <article class="activity-item"><span class="activity-no">02</span><div class="activity-main"><h3>交流会・合同運用</h3><p>学校や地域を越えた交流の機会を設け、共同での無線運用やイベントに取り組みます。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
-          <article class="activity-item"><span class="activity-no">03</span><div class="activity-main"><h3>技術研究・知識共有</h3><p>無線通信、アンテナ、電子工作などに関する技術や研究成果を共有します。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
-          <article class="activity-item"><span class="activity-no">04</span><div class="activity-main"><h3>学生無線家ネットワークの形成</h3><p>各地の学生や団体の活動をつなぎ、継続的な協力関係の構築を目指します。</p></div><span class="activity-mark" aria-hidden="true">›</span></article>
+          <article class="activity-item"><span class="activity-no">01</span><div class="activity-main"><h3>学生局の交信・情報交換</h3><p>学生無線局同士の交信を通じて、活動状況や運用情報を共有します。</p></div></article>
+          <article class="activity-item"><span class="activity-no">02</span><div class="activity-main"><h3>交流会・合同運用</h3><p>学校や地域を越えた交流の機会を設け、共同での無線運用やイベントに取り組みます。</p></div></article>
+          <article class="activity-item"><span class="activity-no">03</span><div class="activity-main"><h3>技術研究・知識共有</h3><p>無線通信、アンテナ、電子工作などに関する技術や研究成果を共有します。</p></div></article>
+          <article class="activity-item"><span class="activity-no">04</span><div class="activity-main"><h3>学生無線家ネットワークの形成</h3><p>各地の学生や団体の活動をつなぎ、継続的な協力関係の構築を目指します。</p></div></article>
         </div>
       </div>
     </section>
@@ -123,17 +129,42 @@
   <script>
     const toggle = document.querySelector('.menu-toggle');
     const nav = document.querySelector('.nav');
+
+    const closeMenu = (restoreFocus = false) => {
+      nav.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'メニューを開く');
+      if (restoreFocus) toggle.focus();
+    };
+
     toggle.addEventListener('click', () => {
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!expanded));
       toggle.setAttribute('aria-label', expanded ? 'メニューを開く' : 'メニューを閉じる');
       nav.classList.toggle('is-open', !expanded);
     });
-    nav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
-      nav.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.setAttribute('aria-label', 'メニューを開く');
-    }));
+
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => closeMenu());
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        closeMenu(true);
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (
+        toggle.getAttribute('aria-expanded') === 'true' &&
+        !nav.contains(event.target) &&
+        !toggle.contains(event.target)
+      ) closeMenu();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 760) closeMenu();
+    });
   </script>
 </body>
 </html>
