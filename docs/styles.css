@@ -1,6 +1,6 @@
 :root {
-  --navy: #12345a;
-  --blue: #1769aa;
+  --navy: #155b7c;
+  --blue: #207da5;
   --text: #202b36;
   --muted: #687684;
   --line: #dce2e8;
@@ -247,4 +247,22 @@ a { color: inherit; text-decoration: none; }
   .contact-page .form-layout { gap: 22px; }
   .contact-page .form-panel { padding: 25px 18px; }
   .contact-page .side-note { position: static; }
+}
+
+
+/* Official NSWRC identity */
+.brand { flex-direction: row; align-items: center; gap: 12px; }
+.brand-logo { display: block; width: 48px; height: 48px; object-fit: contain; flex: 0 0 auto; }
+.brand-copy { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.hero-emblem { display: block; width: 118px; height: 118px; margin: 0 auto 24px; object-fit: contain; }
+.footer-brand { display: inline-flex; align-items: center; gap: 13px; }
+.footer-brand img { width: 54px; height: 54px; object-fit: contain; background: #fff; }
+.footer-brand span { max-width: 260px; }
+@media (max-width: 760px) {
+  .brand { gap: 9px; }
+  .brand-logo { width: 42px; height: 42px; }
+  .brand-name { font-size: 14px; }
+  .brand-en { max-width: 230px; font-size: 5.5px; }
+  .hero-emblem { width: 92px; height: 92px; margin-bottom: 18px; }
+  .footer-brand img { width: 46px; height: 46px; }
 }
