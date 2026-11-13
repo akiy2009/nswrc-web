@@ -451,3 +451,31 @@ a { color: inherit; text-decoration: none; }
  .contact-page .form-panel{padding:22px 15px}
  .contact-page .form-submit{min-height:52px}
 }
+
+
+/* Contact layout fallback for narrow and zoomed mobile viewports */
+@media (max-width: 900px) {
+  body.contact-page { overflow-x: hidden; }
+  .contact-page .contact-content,
+  .contact-page .contact-content > .container,
+  .contact-page .form-layout,
+  .contact-page .form-panel,
+  .contact-page .side-note { min-width: 0; width: 100%; max-width: 100%; }
+  .contact-page .form-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 20px !important;
+    align-items: stretch;
+  }
+  .contact-page .form-panel,
+  .contact-page .side-note { grid-column: 1 / -1; }
+  .contact-page .side-note { position: static !important; }
+  .contact-page .form-field input,
+  .contact-page .form-field select,
+  .contact-page .form-field textarea { max-width: 100%; }
+}
+@media (max-width: 420px) {
+  .contact-page .container { width: calc(100% - 32px); }
+  .contact-page .form-panel { padding: 22px 15px; }
+  .contact-page .side-note { padding: 20px 15px; }
+}
