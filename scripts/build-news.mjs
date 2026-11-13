@@ -6,21 +6,21 @@ const contentDir = resolve(root, 'content/news');
 const template = await readFile(resolve(root, 'templates/news-article.html'), 'utf8');
 
 function parseFrontmatter(source, file) {
-  const match = source.replace(/^\uFEFF/, '').match(/^---\\s*\\r?\\n([\\s\\S]*?)\\r?\\n---\\s*(?:\\r?\\n|$)([\\s\\S]*)$/);
+  const match = source.replace(/^\uFEFF/, '').match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*(?:\r?\n|$)([\s\S]*)$/);
   if (!match) throw new Error(`Missing YAML front matter: ${file}`);
   const meta = {};
-  const lines = match[1].split(/\\r?\\n/);
+  const lines = match[1].split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line.trim() || /^\\s*#/.test(line)) continue;
-    const pair = line.match(/^([a-zA-Z][\\w-]*):\\s*(.*)$/);
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    const pair = line.match(/^([a-zA-Z][\w-]*):\s*(.*)$/);
     if (!pair) throw new Error(`Invalid front matter in ${file}: ${line}`);
     const [, key] = pair;
     let value = pair[2].trim();
     if (value === '|' || value === '|-' || value === '>' || value === '>-') {
       const block = [];
-      while (i + 1 < lines.length && (/^\\s+/.test(lines[i + 1]) || !lines[i + 1].trim())) block.push(lines[++i].replace(/^\\s{2}/, ''));
-      value = value === '>' || value === '>-' ? block.join(' ').trim() : block.join('\\n').trim();
+      while (i + 1 < lines.length && (/^\s+/.test(lines[i + 1]) || !lines[i + 1].trim())) block.push(lines[++i].replace(/^\s{2}/, ''));
+      value = value === '>' || value === '>-' ? block.join(' ').trim() : block.join('\n').trim();
     } else if (value.startsWith('"')) {
       try { value = JSON.parse(value); } catch { throw new Error(`Invalid quoted value for ${key} in ${file}`); }
     } else if (value.startsWith("'") && value.endsWith("'")) {
@@ -32,7 +32,7 @@ function parseFrontmatter(source, file) {
   for (const key of ['date', 'slug', 'category', 'title', 'summary']) {
     if (!item[key]) throw new Error(`Missing "${key}" in ${file}`);
   }
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(item.date) || Number.isNaN(Date.parse(item.date))) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || Number.isNaN(Date.parse(item.date))) {
     throw new Error(`Invalid date in ${file}: ${item.date}`);
   }
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug)) throw new Error(`Invalid slug in ${file}: ${item.slug}`);
@@ -52,7 +52,7 @@ for (const file of files) {
   items.push(item);
 }
 items.sort((a, b) => b.date.localeCompare(a.date));
-const json = JSON.stringify(items, null, 2) + '\\n';
+const json = JSON.stringify(items, null, 2) + '\n';
 for (const target of ['news-data.json', 'docs/news-data.json']) {
   await mkdir(dirname(resolve(root, target)), { recursive: true });
   await writeFile(resolve(root, target), json, 'utf8');
