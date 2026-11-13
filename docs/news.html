@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#ffffff"><meta name="description" content="全国学生無線通信研究会からのお知らせ・活動情報。"><title>お知らせ | 全国学生無線通信研究会</title><script>document.documentElement.classList.add("js");</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"></head>
+<body><a class="skip-link" href="#main">本文へ移動</a><header class="header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="全国学生無線通信研究会 トップページ">
+      <span class="brand-name">全国学生無線通信研究会</span>
+      <span class="brand-en">NATIONAL STUDENT RADIO COMMUNICATION RESEARCH ASSOCIATION</span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="global-nav" aria-label="メニューを開く"><span></span><span></span></button>
+    <nav class="nav" id="global-nav" aria-label="メインメニュー">
+      <a href="index.html#about">研究会について</a><a href="index.html#activities">活動内容</a><a href="index.html#policy">活動方針</a><a href="news.html">お知らせ</a><a class="nav-entry" href="contact.html">お問い合わせ</a>
+    </nav>
+  </div>
+</header><main id="main"><div class="breadcrumb"><div class="container"><a href="index.html">トップ</a>　/　お知らせ</div></div><section class="page-hero"><div class="container"><p class="eyebrow">NEWS & UPDATES</p><h1>お知らせ</h1><p>研究会からのお知らせや活動情報を掲載します。</p></div></section>
+<section class="page-content"><div class="container"><p class="page-lead">イベント、活動報告、運営に関する案内などをこちらでお知らせします。掲載情報は確認できた内容のみ公開します。</p>
+<div class="notice-list" id="news-list"><div class="notice-empty">現在、掲載中のお知らせはありません。</div></div>
+<p style="margin-top:28px;color:#687684;font-size:11px;">ニュースの掲載依頼・情報提供は <a href="contact.html" style="color:#1769aa;text-decoration:underline;">お問い合わせフォーム</a> からご連絡ください。</p></div></section></main><footer class="footer">
+  <div class="container footer-main"><a class="footer-brand" href="index.html">全国学生無線通信研究会</a>
+    <nav aria-label="フッターメニュー"><a href="index.html#about">研究会について</a><a href="index.html#activities">活動内容</a><a href="news.html">お知らせ</a><a href="contact.html">お問い合わせ</a></nav>
+  </div><div class="container footer-bottom"><span>© 全国学生無線通信研究会</span><a href="#top">ページ上部へ ↑</a></div>
+</footer><script>
+const toggle=document.querySelector('.menu-toggle');const nav=document.querySelector('.nav');
+const closeMenu=(focus=false)=>{nav.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','メニューを開く');if(focus)toggle.focus();};
+toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));toggle.setAttribute('aria-label',open?'メニューを開く':'メニューを閉じる');nav.classList.toggle('is-open',!open);});
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>closeMenu()));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&toggle.getAttribute('aria-expanded')==='true')closeMenu(true);});
+document.addEventListener('click',e=>{if(toggle.getAttribute('aria-expanded')==='true'&&!nav.contains(e.target)&&!toggle.contains(e.target))closeMenu();});
+window.addEventListener('resize',()=>{if(window.innerWidth>760)closeMenu();});
+</script></body></html>
