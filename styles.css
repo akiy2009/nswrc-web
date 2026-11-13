@@ -397,3 +397,57 @@ a { color: inherit; text-decoration: none; }
   .article-page .container { width: calc(100% - 32px); }
   .article-page .article-hero { padding-top: 24px; }
 }
+
+
+/* Contact form refinement */
+.contact-page .contact-content{background:#fff}
+.contact-page .form-layout{grid-template-columns:minmax(0,1fr) 300px;gap:36px;align-items:start}
+.contact-page .form-panel{padding:clamp(24px,4vw,42px);border:1px solid var(--line);border-top:3px solid var(--blue);box-shadow:0 12px 36px rgba(25,55,75,.045)}
+.contact-page .contact-form-heading{margin-bottom:28px}
+.contact-page .contact-form-kicker,.contact-page .side-note-kicker{margin:0 0 9px;color:var(--blue);font-size:9px;font-weight:800;letter-spacing:.16em}
+.contact-page .form-panel h2{margin:0 0 8px;font-size:22px}
+.contact-page .form-intro{margin:0;padding:0;border:0;font-size:12px;line-height:1.95}
+.contact-page .contact-required-note{margin:14px 0 0;color:var(--muted);font-size:10px}
+.contact-page .required{display:inline-flex;align-items:center;margin-left:8px;padding:3px 7px;border-radius:2px;background:#fff0f0;color:#a33c3c;font-size:9px;font-weight:700}
+.contact-page .optional{display:inline-flex;margin-left:7px;padding:3px 7px;border:1px solid var(--line);color:var(--muted);font-size:9px;font-weight:500}
+.contact-page .form-field{margin-bottom:23px}
+.contact-page .form-field label,.contact-page .form-label{margin-bottom:9px;font-size:12px}
+.contact-page .form-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.contact-page .form-label-row label{margin:0 0 9px}
+.contact-page .form-counter{color:#8996a1;font-size:10px;font-variant-numeric:tabular-nums}
+.contact-page .form-field input,.contact-page .form-field select,.contact-page .form-field textarea{min-width:0;min-height:50px;padding:13px 14px;border:1px solid #cbd5de;border-radius:3px;background:#fbfcfd;font-size:13px}
+.contact-page .form-field textarea{min-height:190px;resize:vertical}
+.contact-page .form-field input::placeholder,.contact-page .form-field textarea::placeholder{color:#a2adb7}
+.contact-page .form-field input:focus,.contact-page .form-field select:focus,.contact-page .form-field textarea:focus{outline:3px solid rgba(32,125,165,.13);outline-offset:0;border-color:var(--blue);background:#fff}
+.contact-page .form-check{align-items:flex-start;gap:12px;margin:25px 0;padding:15px 16px;border:1px solid var(--line);background:#f7f9fb;border-radius:3px}
+.contact-page .form-check input{width:17px;height:17px;flex:0 0 auto;margin:2px 0 0;accent-color:var(--navy)}
+.contact-page .form-check span{min-width:0}
+.contact-page .form-check small{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+.contact-page .form-submit{display:flex;width:100%;min-height:54px;justify-content:space-between;padding:0 19px;border-radius:2px;font-size:12px}
+.contact-page .form-submit span:last-child{font-size:21px;line-height:1}
+.contact-page .form-status{border:1px solid #e8d9b6;border-left:3px solid #b88b3d;border-radius:2px;background:#fffaf0;color:#735a2d}
+.contact-page .side-note{position:sticky;top:112px;padding:25px 23px;border:1px solid var(--line);border-top:3px solid var(--blue);background:#fff}
+.contact-page .side-note h3{margin:0 0 10px;font-size:14px}
+.contact-page .side-note h3:not(:first-of-type){margin-top:24px;padding-top:19px;border-top:1px solid var(--line)}
+.contact-page .side-note p,.contact-page .side-note li{font-size:11px;line-height:1.95}
+.contact-page .side-note ul{padding-left:1.2em}
+.contact-page .contact-status-note{margin-top:24px;padding:15px;border:1px solid #e8d9b6;background:#fffaf0}
+.contact-page .contact-status-note strong{color:#735a2d;font-size:11px}
+.contact-page .contact-status-note p{margin:7px 0 0;color:#806d4e;font-size:10px;line-height:1.85}
+@media(max-width:760px){
+ .contact-page .contact-content{padding:28px 0 54px}
+ .contact-page .form-layout{grid-template-columns:minmax(0,1fr);gap:18px}
+ .contact-page .form-panel{padding:24px 18px;box-shadow:none}
+ .contact-page .contact-form-heading{margin-bottom:24px}
+ .contact-page .form-panel h2{font-size:19px}
+ .contact-page .form-field{margin-bottom:20px}
+ .contact-page .form-field input,.contact-page .form-field select,.contact-page .form-field textarea{font-size:16px}
+ .contact-page .form-field textarea{min-height:170px}
+ .contact-page .form-check{padding:13px}
+ .contact-page .side-note{position:static;padding:21px 18px}
+}
+@media(max-width:380px){
+ .contact-page .container{width:calc(100% - 32px)}
+ .contact-page .form-panel{padding:22px 15px}
+ .contact-page .form-submit{min-height:52px}
+}
