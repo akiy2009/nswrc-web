@@ -53,3 +53,19 @@
 .admin-dashboard-heading{align-items:flex-start;flex-direction:column;margin-top:40px}
 .admin-dashboard-heading .button{width:auto}
 }
+
+/* Application form: align controls and section rhythm with the shared portal */
+.application-page .application-intro{max-width:850px;margin:0 auto 22px;padding:18px 22px;background:var(--light);border-left:3px solid var(--blue);color:#53616e;font-size:12px;line-height:2}
+.application-page .application-card{max-width:850px;margin:0 auto;border:1px solid var(--line);border-top:3px solid var(--blue);background:#fff}
+.application-page .application-section{padding:30px 34px;border-bottom:1px solid var(--line)}
+.application-page .application-section h2{margin:0 0 24px;color:var(--navy);font-size:17px}
+.application-page .application-field label,.application-page .application-label{color:var(--navy);font-size:12px;font-weight:700}
+.application-page .application-field input:not([type=checkbox]):not([type=radio]),.application-page .application-field select,.application-page .application-field textarea{border:1px solid #cbd5de;border-radius:0;background:#fbfcfd}
+.application-page .application-field input:focus,.application-page .application-field select:focus,.application-page .application-field textarea:focus{outline:2px solid #4b91c8;outline-offset:1px;background:#fff}
+.application-page .application-options{gap:12px 20px}
+.application-page .application-options label{color:#53616e;font-size:12px}
+.application-page .application-consent{padding:17px;background:var(--light);font-size:11px;line-height:1.9}
+.application-page .application-consent a{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+.application-page .application-submit{padding:28px 34px}
+.application-page .application-submit p{color:var(--muted);font-size:11px;line-height:1.9}
+@media(max-width:760px){.application-page .application-section{padding:24px 18px}.application-page .application-submit{padding:22px 18px}.application-page .application-intro{padding:15px 16px}}
