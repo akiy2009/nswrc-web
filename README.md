@@ -76,8 +76,9 @@ GitHub Pagesの公開サイトは維持し、Vercel上のAPIを通じてSupabase
 - `application.html` — 入会申込フォーム
 - `admin.html` — 管理者向け申込一覧・ステータス更新
 - `api/applications.js` — 公開申込API
-- `api/admin-applications.js` — 管理者専用API
+- `api/admin-applications.js` — 管理者専用API（一覧・審査状況・内部メモ・操作履歴）
 - `supabase/migrations/202611140001_membership_applications.sql` — DBスキーマとRLS
+- `supabase/migrations/202611140002_admin_audit_and_notes.sql` — 管理者用メモ欄と操作履歴
 - `admin-config.js` — 管理画面用の公開Supabase URL / anon key（service role keyは禁止）
 
 ### 本番受付開始前の必須設定
@@ -85,7 +86,20 @@ GitHub Pagesの公開サイトは維持し、Vercel上のAPIを通じてSupabase
 2. Vercelの `nswrc-membership` プロジェクトに `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`ALLOWED_ORIGINS` を設定する。Service Role Keyはサーバー環境変数だけに保存する。
 3. `admin-config.js` にSupabase URLとanon keyを設定する。これらは公開鍵だが、RLSとサーバー側権限検証を必須とする。
 4. Supabase Authで管理者アカウントを作成し、信頼できる管理者が `app_metadata.role = "admin"` を設定する。ユーザー自身が変更可能なuser_metadataを権限判定に使わない。
-5. API・管理者ログイン・申込保存・ステータス更新をテストする。
-6. 個人情報管理主体、連絡先、保存期間、削除手順、参加条件、会費を運営側で確定してから本番受付を開始する。
+5. `202611140002_admin_audit_and_notes.sql` をSupabase SQL Editorで実行し、内部メモ欄と操作履歴テーブルを追加する。
+6. API・管理者ログイン・申込保存・ステータス更新・内部メモ・操作履歴をテストする。
+7. 個人情報管理主体、連絡先、保存期間、削除手順、参加条件、会費を運営側で確定してから本番受付を開始する。
 
 現在、環境変数・Supabaseプロジェクトは未設定のため、フォームは受付停止の応答を返します。メール自動返信・運営通知・レート制限・監視・バックアップは別途設定が必要です。
+
+
+### 管理者ポータルの機能
+
+- 概要：申込件数、審査状況、直近6か月の申込推移、最近の申込
+- 入会申込管理：キーワード検索、審査状況・申込区分・受付日の絞り込み、ページ切替、CSV出力
+- 申込詳細：申込情報の確認、管理者専用の内部メモ、審査状況の更新
+- 操作履歴：審査状況と内部メモの変更履歴（追加migration適用後）
+- 環境設定：表示件数、自動更新、ログイン後の初期画面
+- デモ環境：架空のデータで画面を確認。デモの変更は保存されない
+
+内部メモは申込者には公開されません。管理者API経由でのみ取得・更新し、データベースのRLSは有効のままにします。CSVには内部メモが含まれるため、出力ファイルも個人情報と同等に慎重に取り扱ってください。
