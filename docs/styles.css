@@ -678,3 +678,9 @@ body{color:var(--text);background:#fff;font-family:"Noto Sans JP","Yu Gothic",sa
  .footer-bottom{gap:12px;align-items:flex-start;flex-direction:column;padding-top:14px;padding-bottom:14px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+/* Responsive navigation: mobile menu is closed until explicitly opened */
+@media(max-width:760px){
+  .application-page .nav,.news-page .nav,.contact-page .nav,.join-page .nav{display:none}
+  .application-page .nav.is-open,.news-page .nav.is-open,.contact-page .nav.is-open,.join-page .nav.is-open{display:flex}
+}
