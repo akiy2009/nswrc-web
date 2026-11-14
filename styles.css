@@ -726,3 +726,11 @@ body{color:var(--text);background:#fff;font-family:"Noto Sans JP","Yu Gothic",sa
  .legal-lead{padding:18px}
  .legal-section{padding:21px 0}
 }
+
+
+/* Important radio-operation legal notice */
+.radio-operation-warning{margin:20px 0;padding:18px 21px;border:1px solid #d9a0a0;border-left:4px solid #b42318;background:#fff7f7;color:#7f1d1d}
+.radio-operation-warning>strong{display:block;margin:0 0 9px;color:#a21d1d;font-size:13px;line-height:1.7}
+.radio-operation-warning p{margin:7px 0;color:#7f2929;font-size:11px;line-height:1.95}
+.radio-operation-warning small{display:block;margin-top:10px;padding-top:9px;border-top:1px solid #efcccc;color:#8c5555;font-size:10px;line-height:1.7}
+@media(max-width:760px){.radio-operation-warning{padding:15px 15px}.radio-operation-warning>strong{font-size:12px}.radio-operation-warning p{font-size:11px}}
