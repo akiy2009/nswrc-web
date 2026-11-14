@@ -404,3 +404,78 @@
  .ns-detail-actions .ns-primary-button{width:100%;margin:4px 0 0}
  .ns-demo-banner{font-size:9px}
 }
+
+
+/* =========================================================
+   OVERVIEW DASHBOARD — clearer hierarchy and readability
+   ========================================================= */
+#view-overview .ns-page-heading{margin-bottom:24px}
+#view-overview .ns-page-heading h1{font-size:clamp(28px,3.2vw,36px);letter-spacing:-.025em}
+#view-overview .ns-page-heading>div>p:last-child{font-size:12px;color:#647784}
+#view-overview .ns-metric-grid{gap:14px;margin-bottom:20px}
+#view-overview .ns-metric{
+  position:relative;min-height:142px;padding:22px 22px 19px;
+  border:1px solid #d8e2e8;border-top:3px solid #d8e2e8;
+  box-shadow:0 2px 8px rgba(20,48,67,.035);
+}
+#view-overview .ns-metric-primary{border-top-color:#244f6b;background:#f9fbfc}
+#view-overview .ns-metric>span{font-size:11px;color:#526a79}
+#view-overview .ns-metric strong{margin:17px 0 8px;font-size:39px;line-height:1.05;color:#15364d}
+#view-overview .ns-metric small{font-size:10px;color:#788994}
+#view-overview .ns-overview-grid{gap:16px;margin-bottom:18px}
+#view-overview .ns-panel{box-shadow:0 2px 8px rgba(20,48,67,.035)}
+#view-overview .ns-panel-heading{min-height:76px;padding:20px 24px}
+#view-overview .ns-panel-heading h2{font-size:17px}
+#view-overview .ns-panel-caption{font-size:10px}
+#view-overview .ns-chart-panel{min-width:0}
+#view-overview .ns-month-chart{
+  height:232px;gap:clamp(12px,2.4vw,28px);
+  padding:20px clamp(18px,3vw,34px) 16px;
+  background:linear-gradient(to bottom,transparent 0,transparent calc(100% - 34px),#f7f9fa calc(100% - 34px),#f7f9fa 100%);
+}
+#view-overview .ns-chart-column{gap:9px}
+#view-overview .ns-chart-column>strong{font-size:11px;color:#36566b}
+#view-overview .ns-chart-track{height:138px;width:min(42px,72%);background:#edf2f5}
+#view-overview .ns-chart-track span{background:#527f9b}
+#view-overview .ns-chart-column small{font-size:10px;color:#647987}
+#view-overview .ns-quick-panel .ns-panel-heading{border-bottom:1px solid #e3eaee}
+#view-overview .ns-quick-link{min-height:76px;padding:15px 23px}
+#view-overview .ns-quick-link strong{font-size:12px}
+#view-overview .ns-quick-link small{font-size:10px}
+#view-overview .ns-quick-link b{font-size:20px}
+#view-overview .ns-quick-note{margin:14px 18px 18px;padding:15px 16px}
+#view-overview .ns-quick-note-label{font-size:9px}
+#view-overview .ns-quick-note strong{font-size:12px}
+#view-overview .ns-quick-note p{font-size:10px}
+#view-overview .ns-recent-panel .ns-panel-heading{min-height:76px}
+#view-overview .ns-recent-list{padding:0 24px}
+#view-overview .ns-recent-row{min-height:64px;grid-template-columns:minmax(150px,1fr) minmax(150px,1fr) auto;gap:16px}
+#view-overview .ns-recent-name{font-size:12px}
+#view-overview .ns-recent-row>small{font-size:10px}
+#view-overview .ns-status{font-size:10px;padding:6px 10px}
+#view-overview .ns-text-button{font-size:11px}
+#view-overview .ns-recent-list:empty{padding:24px;color:#748692;font-size:12px}
+@media(max-width:800px){
+  #view-overview .ns-metric-grid{gap:10px}
+  #view-overview .ns-metric{min-height:128px;padding:18px}
+  #view-overview .ns-metric strong{font-size:35px}
+  #view-overview .ns-month-chart{height:210px}
+}
+@media(max-width:560px){
+  #view-overview .ns-page-heading h1{font-size:26px}
+  #view-overview .ns-page-heading>div>p:last-child{font-size:11px}
+  #view-overview .ns-metric-grid{gap:9px}
+  #view-overview .ns-metric{min-height:116px;padding:15px}
+  #view-overview .ns-metric>span{font-size:10px}
+  #view-overview .ns-metric strong{margin:13px 0 6px;font-size:31px}
+  #view-overview .ns-metric small{font-size:9px;line-height:1.5}
+  #view-overview .ns-panel-heading{padding:16px}
+  #view-overview .ns-month-chart{height:190px;gap:8px;padding:16px 12px 12px}
+  #view-overview .ns-chart-track{height:112px;width:25px}
+  #view-overview .ns-chart-column>strong{font-size:10px}
+  #view-overview .ns-chart-column small{font-size:9px}
+  #view-overview .ns-recent-list{padding:0 15px}
+  #view-overview .ns-recent-row{min-height:66px;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px}
+  #view-overview .ns-recent-row>small{grid-column:1;font-size:9px}
+  #view-overview .ns-recent-row .ns-status{grid-column:2;grid-row:1/3}
+}
