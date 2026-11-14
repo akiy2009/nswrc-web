@@ -1,0 +1,11 @@
+const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
+function send(res,status,data){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(data);}
+async function admin(req,res){const h=req.headers.authorization||"";const token=h.startsWith("Bearer ")?h.slice(7):"";if(!token)return null;const r=await fetch(base()+"/auth/v1/user",{headers:{apikey:process.env.SUPABASE_ANON_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY,Authorization:"Bearer "+token}});if(!r.ok)return null;const u=await r.json();return u.app_metadata?.role==="admin"?u:null;}
+module.exports=async function handler(req,res){
+ if(!base()||!process.env.SUPABASE_SERVICE_ROLE_KEY)return send(res,503,{error:"Server is not configured"});
+ const user=await admin(req,res);if(!user)return send(res,401,{error:"管理者としてログインしてください。"});
+ const headers={apikey:process.env.SUPABASE_SERVICE_ROLE_KEY,Authorization:"Bearer "+process.env.SUPABASE_SERVICE_ROLE_KEY,"Content-Type":"application/json"};
+ if(req.method==="GET"){const r=await fetch(base()+"/rest/v1/membership_applications?select=id,application_type,full_name,email,affiliation,grade,callsign,region,interests,message,status,created_at,updated_at&order=created_at.desc&limit=200",{headers});const d=await r.json();return send(res,r.status,r.ok?{applications:d}:{error:"一覧を取得できません。"});}
+ if(req.method==="PATCH"){const id=String(req.body?.id||"");const status=String(req.body?.status||"");if(!/^[0-9a-f-]{36}$/i.test(id)||!["pending","reviewing","approved","rejected","withdrawn"].includes(status))return send(res,400,{error:"更新内容が不正です。"});const r=await fetch(base()+"/rest/v1/membership_applications?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{...headers,Prefer:"return=representation"},body:JSON.stringify({status,updated_at:new Date().toISOString()})});const d=await r.json();return send(res,r.status,r.ok?{application:d[0]||null}:{error:"更新できません。"});}
+ res.setHeader("Allow","GET, PATCH");return send(res,405,{error:"Method not allowed"});
+};
