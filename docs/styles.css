@@ -560,3 +560,5 @@ a { color: inherit; text-decoration: none; }
 .application-status[hidden]{display:none}
 .application-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
 @media(max-width:760px){.application-card{padding:23px 18px}.application-grid{grid-template-columns:1fr;gap:17px}.application-field.full{grid-column:auto}.application-submit{align-items:stretch;flex-direction:column}.application-submit .button{width:100%}}
+
+.join-apply-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:35px;padding:28px 32px;border:1px solid var(--line);background:#f8fafc}.join-apply-cta h2{margin:8px 0;color:var(--navy);font-size:21px}.join-apply-cta p:not(.section-en){margin:0;color:var(--muted);font-size:12px;line-height:1.9}.join-apply-cta .button{flex:0 0 auto}@media(max-width:760px){.join-apply-cta{align-items:stretch;flex-direction:column;padding:23px 18px}.join-apply-cta .button{width:100%}}
