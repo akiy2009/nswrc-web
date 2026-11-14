@@ -83,7 +83,7 @@ GitHub Pagesの公開サイトは維持し、Vercel上のAPIを通じてSupabase
 
 ### 本番受付開始前の必須設定
 1. Supabaseプロジェクトを用意し、migration SQLをSQL Editorで実行する。
-2. Vercelの `nswrc-membership` プロジェクトに `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`ALLOWED_ORIGINS` を設定する。Service Role Keyはサーバー環境変数だけに保存する。
+2. Vercelの `nswrc-membership` プロジェクトに `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`（または `SUPABASE_SECRET_KEY`）、`ALLOWED_ORIGINS` を設定する。Supabaseの新形式 `sb_secret_...` を使う場合もサーバー環境変数だけに保存し、APIでは `apikey` ヘッダーのみで送信する。旧形式のJWT Service Role Keyは `apikey` と `Authorization: Bearer` の両方で送信する。
 3. `admin-config.js` にSupabase URLとanon keyを設定する。これらは公開鍵だが、RLSとサーバー側権限検証を必須とする。
 4. Supabase Authで管理者アカウントを作成し、信頼できる管理者が `app_metadata.role = "admin"` を設定する。ユーザー自身が変更可能なuser_metadataを権限判定に使わない。
 5. `202611140002_admin_audit_and_notes.sql` をSupabase SQL Editorで実行し、内部メモ欄と操作履歴テーブルを追加する。
