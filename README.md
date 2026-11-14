@@ -67,3 +67,25 @@ GitHub Pages の公開元を `main` ブランチの `/docs` に設定する運�
 ## お問い合わせフォーム
 
 現在のフォームは入力検証と送信前の案内まで実装していますが、送信先は未設定です。実際に問い合わせを受信するには、フォーム受付サービスまたはサーバー側APIを接続し、送信先・個人情報の取り扱い・スパム対策を設定する必要があります。送信先が接続されるまでは、フォームから問い合わせが届くことはありません。
+
+
+## 入会申込システム（Vercel + Supabase）
+
+GitHub Pagesの公開サイトは維持し、Vercel上のAPIを通じてSupabaseへ申込情報を保存します。
+
+- `application.html` — 入会申込フォーム
+- `admin.html` — 管理者向け申込一覧・ステータス更新
+- `api/applications.js` — 公開申込API
+- `api/admin-applications.js` — 管理者専用API
+- `supabase/migrations/202611140001_membership_applications.sql` — DBスキーマとRLS
+- `admin-config.js` — 管理画面用の公開Supabase URL / anon key（service role keyは禁止）
+
+### 本番受付開始前の必須設定
+1. Supabaseプロジェクトを用意し、migration SQLをSQL Editorで実行する。
+2. Vercelの `nswrc-membership` プロジェクトに `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`ALLOWED_ORIGINS` を設定する。Service Role Keyはサーバー環境変数だけに保存する。
+3. `admin-config.js` にSupabase URLとanon keyを設定する。これらは公開鍵だが、RLSとサーバー側権限検証を必須とする。
+4. Supabase Authで管理者アカウントを作成し、信頼できる管理者が `app_metadata.role = "admin"` を設定する。ユーザー自身が変更可能なuser_metadataを権限判定に使わない。
+5. API・管理者ログイン・申込保存・ステータス更新をテストする。
+6. 個人情報管理主体、連絡先、保存期間、削除手順、参加条件、会費を運営側で確定してから本番受付を開始する。
+
+現在、環境変数・Supabaseプロジェクトは未設定のため、フォームは受付停止の応答を返します。メール自動返信・運営通知・レート制限・監視・バックアップは別途設定が必要です。
