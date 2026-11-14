@@ -562,3 +562,119 @@ a { color: inherit; text-decoration: none; }
 @media(max-width:760px){.application-card{padding:23px 18px}.application-grid{grid-template-columns:1fr;gap:17px}.application-field.full{grid-column:auto}.application-submit{align-items:stretch;flex-direction:column}.application-submit .button{width:100%}}
 
 .join-apply-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:35px;padding:28px 32px;border:1px solid var(--line);background:#f8fafc}.join-apply-cta h2{margin:8px 0;color:var(--navy);font-size:21px}.join-apply-cta p:not(.section-en){margin:0;color:var(--muted);font-size:12px;line-height:1.9}.join-apply-cta .button{flex:0 0 auto}@media(max-width:760px){.join-apply-cta{align-items:stretch;flex-direction:column;padding:23px 18px}.join-apply-cta .button{width:100%}}
+
+
+/* =========================================================
+   NSWRC DESIGN SYSTEM — unified institutional visual language
+   ========================================================= */
+:root{
+  --navy:#17364f;
+  --blue:#2b6688;
+  --text:#243442;
+  --muted:#667887;
+  --line:#d8e0e6;
+  --light:#f3f6f8;
+  --white:#fff;
+  --content:1180px;
+  --surface:#fbfcfd;
+  --focus:#276f9b;
+}
+html{scroll-behavior:smooth;scroll-padding-top:92px}
+body{color:var(--text);background:#fff;font-family:"Noto Sans JP","Yu Gothic",sans-serif;letter-spacing:.012em}
+.container{width:min(var(--content),calc(100% - 72px))}
+.header{height:82px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+.header-inner{gap:28px}
+.brand{display:flex;flex-direction:row;align-items:center;gap:13px;min-width:0}
+.brand-logo{width:43px;height:43px}
+.brand-copy{gap:4px}
+.brand-name{font-size:15px;letter-spacing:.035em;color:var(--navy);white-space:nowrap}
+.brand-en{font-size:7px;letter-spacing:.12em;color:#7b8994}
+.nav{gap:clamp(14px,2vw,27px);font-size:11px;letter-spacing:.02em}
+.nav a:not(.nav-entry)::after{height:2px}
+.nav .nav-entry{padding:12px 17px;background:var(--navy);border:1px solid var(--navy);letter-spacing:.04em}
+.nav .nav-entry:hover{background:#fff;color:var(--navy)}
+.hero{background:#f5f8fa;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0 0 0 auto;width:min(38vw,520px);pointer-events:none;opacity:.55;background-image:linear-gradient(to right,rgba(23,54,79,.055) 1px,transparent 1px),linear-gradient(to bottom,rgba(23,54,79,.055) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to left,#000,transparent)}
+.hero-inner{position:relative;z-index:1;min-height:510px;grid-template-columns:minmax(0,1.35fr) minmax(270px,.65fr);gap:clamp(36px,7vw,96px);padding-top:76px;padding-bottom:76px}
+.eyebrow,.section-en{font-size:10px;letter-spacing:.18em;color:var(--blue)}
+.hero h1{font-size:clamp(39px,5vw,62px);line-height:1.42;letter-spacing:.025em;color:var(--navy);margin:20px 0}
+.hero-description{max-width:650px;font-size:13px;line-height:2.25;color:#536473}
+.hero-aside{padding:28px 27px;border:1px solid var(--line);border-top:2px solid var(--navy);background:#fff;box-shadow:none}
+.aside-label{font-size:9px;letter-spacing:.16em;color:#71818e}
+.aside-title{font-size:20px;line-height:1.65;color:var(--navy)}
+.button{min-height:50px;min-width:184px;padding:0 19px;border-radius:0;font-size:11px;letter-spacing:.035em}
+.button-primary{background:var(--navy);border-color:var(--navy)}
+.button-primary:hover{background:var(--blue);border-color:var(--blue)}
+.button-text{border-color:#b9c7d1}
+.section{padding:88px 0}
+.section-heading{margin-bottom:38px}
+.section-heading h2{font-size:27px;letter-spacing:.025em;color:var(--navy)}
+.about-content{gap:8%;padding:30px 0 38px}
+.about-content h3{font-size:23px;line-height:1.8}
+.about-text p,.page-lead{font-size:12px;line-height:2.2;color:#536473}
+.facts{border-color:var(--line)}
+.fact{padding-top:23px;padding-bottom:23px}
+.fact-number{color:var(--blue)}
+.card,.activity-card,.policy-card,.hero-aside{box-shadow:none;border-radius:0}
+.page-hero{padding:58px 0 50px;background:#f4f7f9;border-bottom:1px solid var(--line)}
+.page-hero h1{font-size:clamp(29px,3.6vw,42px);letter-spacing:.025em;color:var(--navy)}
+.page-hero p:last-child{font-size:12px;line-height:2.1;color:#5d6e7b}
+.breadcrumb{padding:13px 0;font-size:10px;background:#fff;color:#75838d}
+.page-content{padding:54px 0 88px}
+.notice-row,.news-card-link{border-color:var(--line)}
+.news-card-link{padding:25px 14px;transition:background .2s}
+.news-card-link:hover{padding-left:20px;padding-right:20px;background:#f5f8fa}
+.news-card-title{font-size:15px;line-height:1.8}
+.news-card-summary{font-size:11px;line-height:2}
+.news-card-more{font-size:10px;letter-spacing:.06em}
+.application-page .application-card,.admin-login-panel{border:1px solid var(--line);border-top:2px solid var(--navy);box-shadow:none}
+.application-page .application-section{padding:28px 34px}
+.application-page .application-section h2{font-size:16px;letter-spacing:.025em}
+.application-page .application-field input:not([type=checkbox]):not([type=radio]),.application-page .application-field select,.application-page .application-field textarea,.admin-login-fields input{border:1px solid #c7d2da;border-radius:0;background:#fbfcfd;min-height:46px}
+.application-page .application-field input:focus,.application-page .application-field select:focus,.application-page .application-field textarea:focus,.admin-login-fields input:focus{outline:2px solid var(--focus);outline-offset:1px}
+.application-page .application-intro,.application-page .application-consent,.admin-security-note{background:#f3f6f8;border-color:var(--line);border-radius:0}
+.application-page .application-submit{padding-top:26px;padding-bottom:26px}
+.privacy-callout{background:#f3f6f8;border-left:2px solid var(--navy)}
+.privacy-section{border-color:var(--line)}
+.privacy-section h2{font-size:20px;color:var(--navy)}
+.admin-login-panel{padding:36px 38px}
+.admin-table-wrap{border:1px solid var(--line)}
+.admin-table th{background:#f1f5f7;color:var(--navy);font-size:10px;letter-spacing:.04em}
+.admin-table td{font-size:11px}
+.footer{background:#142f46;color:#dbe4ea}
+.footer-main{min-height:112px}
+.footer-brand{font-size:13px;letter-spacing:.02em}
+.footer-brand img{background:transparent}
+.footer nav{gap:22px;font-size:10px}
+.footer-bottom{border-color:#345066;color:#aebdc8}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+@media(max-width:900px){
+ .container{width:calc(100% - 48px)}
+ .nav{gap:13px;font-size:10px}
+ .brand-name{font-size:13px}
+ .brand-en{font-size:6px}
+}
+@media(max-width:760px){
+ html{scroll-padding-top:72px}
+ .container{width:calc(100% - 40px)}
+ .header{height:70px}
+ .brand{gap:10px}
+ .brand-logo{width:38px;height:38px}
+ .brand-name{font-size:13px}
+ .brand-en{font-size:5.5px;letter-spacing:.1em}
+ .hero::before{width:70vw;opacity:.35}
+ .hero-inner{grid-template-columns:1fr;gap:30px;min-height:0;padding-top:58px;padding-bottom:52px}
+ .hero h1{font-size:clamp(34px,9vw,46px);line-height:1.48}
+ .hero-description{font-size:12px}
+ .hero-aside{max-width:480px}
+ .section{padding:64px 0}
+ .section-heading h2{font-size:23px}
+ .page-hero{padding:42px 0 36px}
+ .page-content{padding:38px 0 66px}
+ .application-page .application-section{padding:23px 18px}
+ .admin-login-panel{padding:26px 19px}
+ .footer-main{align-items:flex-start;flex-direction:column;padding-top:25px;padding-bottom:25px}
+ .footer nav{gap:14px 20px}
+ .footer-bottom{gap:12px;align-items:flex-start;flex-direction:column;padding-top:14px;padding-bottom:14px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
