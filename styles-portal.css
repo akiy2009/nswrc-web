@@ -75,3 +75,20 @@
 .admin-demo-banner{display:flex;gap:14px;align-items:flex-start;padding:18px 20px;margin:26px 0 4px;border:1px solid #b9cbd8;background:#f4f7fa;color:#435363;font-size:12px;line-height:1.9}
 .admin-demo-banner strong{flex:0 0 auto;color:var(--navy);font-size:12px}
 @media(max-width:760px){.admin-demo-banner{flex-direction:column;gap:5px;padding:15px}}
+
+
+/* NSWRC portal components — shared institutional system */
+.portal-page .page-hero{padding:58px 0 50px}
+.portal-page .page-content{padding:54px 0 88px}
+.portal-page .header .nav{gap:clamp(14px,2vw,27px)}
+.privacy-layout{gap:54px}
+.privacy-aside{border-top:2px solid var(--navy)}
+.privacy-aside a{font-size:10px}
+.privacy-callout{border-radius:0}
+.privacy-section h2{font-size:20px}
+.admin-security-note{border-radius:0}
+.admin-login-panel{border-radius:0}
+.admin-panel-heading h2,.admin-dashboard-heading h2{font-size:21px}
+.admin-demo-banner{border-radius:0;background:#f3f6f8;border-color:#cbd7df;color:#425565}
+.admin-demo-banner strong{color:var(--navy)}
+@media(max-width:760px){.portal-page .page-hero{padding:42px 0 36px}.portal-page .page-content{padding:38px 0 66px}.privacy-layout{gap:28px}}
