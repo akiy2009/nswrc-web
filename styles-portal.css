@@ -69,3 +69,9 @@
 .application-page .application-submit{padding:28px 34px}
 .application-page .application-submit p{color:var(--muted);font-size:11px;line-height:1.9}
 @media(max-width:760px){.application-page .application-section{padding:24px 18px}.application-page .application-submit{padding:22px 18px}.application-page .application-intro{padding:15px 16px}}
+
+/* Demo-only access for reviewing the admin interface */
+.admin-demo-button{width:100%;margin-top:18px;justify-content:center}
+.admin-demo-banner{display:flex;gap:14px;align-items:flex-start;padding:18px 20px;margin:26px 0 4px;border:1px solid #b9cbd8;background:#f4f7fa;color:#435363;font-size:12px;line-height:1.9}
+.admin-demo-banner strong{flex:0 0 auto;color:var(--navy);font-size:12px}
+@media(max-width:760px){.admin-demo-banner{flex-direction:column;gap:5px;padding:15px}}
