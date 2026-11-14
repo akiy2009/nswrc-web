@@ -115,7 +115,7 @@
 <script src="admin-config.js"></script>
 <script>
 "use strict";
-const SUPABASE_URL=window.NSWRC_SUPABASE_URL||"",SUPABASE_ANON_KEY=window.NSWRC_SUPABASE_ANON_KEY||"",API_BASE="https://nswrc-membership-gakusei-bot.vercel.app";
+const SUPABASE_URL=window.NSWRC_SUPABASE_URL||"",SUPABASE_ANON_KEY=window.NSWRC_SUPABASE_ANON_KEY||"",API_BASE="https://nswrc-membership.vercel.app";
 let supabaseClient=null,accessToken=null,demoMode=false,currentUser=null,applications=[],activities=[],selectedApplication=null,refreshTimer=null,currentPage=1,toastTimer=null;
 const demoApplications=[
 {id:"demo-001",created_at:"2026-11-14T09:15:00+09:00",full_name:"山田 太郎",affiliation:"香川高専",grade:"2年",callsign:"JJ5AAA",region:"香川県",email:"taro.yamada@example.jp",application_type:"individual",interests:["アマチュア無線","防災通信"],message:"無線通信の研究活動に参加したいです。",admin_note:"活動内容について案内メールを送る予定。",status:"pending"},
@@ -138,7 +138,31 @@ function setView(name){document.querySelectorAll(".ns-view").forEach(v=>v.hidden
 document.querySelectorAll(".ns-side-link").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
 document.querySelectorAll("[data-open-view]").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.openView)));
 function setAccount(){const email=currentUser?.email||"デモアカウント";$("admin-account").textContent=email;$("settings-account").textContent=email;$("admin-avatar").textContent=(email[0]||"A").toUpperCase();}
-async function requestApi(method="GET",body){const response=await fetch(API_BASE+"/api/admin-applications",{method,headers:{Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});const data=await response.json().catch(()=>({error:"サーバー応答を読み取れません。"}));if(!response.ok)throw new Error(data.error||"API処理に失敗しました。");return data;}
+async function requestApi(method="GET",body){
+ let response;
+ try{
+  const headers={Authorization:"Bearer "+accessToken};
+  if(body){headers["Content-Type"]="application/json";}
+  response=await fetch(API_BASE+"/api/admin-applications",{
+   method,
+   mode:"cors",
+   cache:"no-store",
+   headers,
+   body:body?JSON.stringify(body):undefined
+  });
+ }catch(error){
+  throw new Error("管理APIに接続できません。通信またはCORS設定を確認してください。 ("+(error?.message||"network error")+")");
+ }
+ const contentType=response.headers.get("content-type")||"";
+ const raw=await response.text();
+ let data;
+ try{data=raw?JSON.parse(raw):{};}catch{data={};}
+ if(!contentType.includes("application/json")){
+  throw new Error("管理APIがJSON以外の応答を返しました (HTTP "+response.status+")。Vercelの公開設定を確認してください。");
+ }
+ if(!response.ok)throw new Error(data.error||("API処理に失敗しました (HTTP "+response.status+")。"));
+ return data;
+}
 async function loadData(){const data=await requestApi();applications=data.applications||[];activities=data.activities||[];$("connection-label").textContent="API接続済み";$("system-status").textContent="正常に接続";$("system-status-description").textContent="申込データを取得しました。";$("settings-api").textContent="接続済み";$("environment-badge").textContent="LIVE";$("last-updated").textContent="最終更新 "+new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});renderAll();}
 function renderAll(){renderOverview();renderApplications();renderActivities();const pending=applications.filter(x=>x.status==="pending").length;$("pending-nav-count").textContent=pending;}
 function monthBuckets(){const now=new Date(),b=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);b.push({key:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),label:(d.getMonth()+1)+"月",count:0});}applications.forEach(a=>{const d=new Date(a.created_at),key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),bucket=b.find(x=>x.key===key);if(bucket)bucket.count++;});return b;}
