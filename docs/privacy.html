@@ -29,5 +29,5 @@
 <div class="privacy-footer-note"><p>本ページの内容は運営体制・利用サービス・保存期間等の確定に応じて更新します。</p><a class="button button-text" href="application.html">入会申込ページへ戻る <span>›</span></a></div>
 </div></div></section></main>
 <footer class="footer"><div class="container footer-main"><a class="footer-brand" href="index.html"><img src="assets/nswrc-logo.svg" alt=""><span>全国学生無線通信研究会</span></a><nav><a href="join.html">参加・入会案内</a><a href="news.html">お知らせ</a><a href="contact.html">お問い合わせ</a><a href="privacy.html">個人情報の取り扱い</a></nav></div><div class="container footer-bottom"><span>© 全国学生無線通信研究会</span><a href="#main">ページ上部へ ↑</a></div></footer>
-<script src="scripts/site.js"></script>
+<script>const menuButton=document.querySelector(".menu-toggle"),menu=document.querySelector(".nav");if(menuButton&&menu){menuButton.addEventListener("click",()=>{const open=menuButton.getAttribute("aria-expanded")==="true";menuButton.setAttribute("aria-expanded",String(!open));menu.classList.toggle("is-open",!open);});menu.querySelectorAll("a").forEach(link=>link.addEventListener("click",()=>{menuButton.setAttribute("aria-expanded","false");menu.classList.remove("is-open");}));}</script>
 </body></html>
