@@ -684,3 +684,45 @@ body{color:var(--text);background:#fff;font-family:"Noto Sans JP","Yu Gothic",sa
   .application-page .nav,.news-page .nav,.contact-page .nav,.join-page .nav{display:none}
   .application-page .nav.is-open,.news-page .nav.is-open,.contact-page .nav.is-open,.join-page .nav.is-open{display:flex}
 }
+
+
+/* NSWRC activity archive and legal pages */
+.activity-record-preview{background:#f7f9fa;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.activity-highlight{display:grid;grid-template-columns:190px minmax(0,1fr);gap:34px;padding:28px 30px;border:1px solid var(--line);border-left:3px solid var(--navy);background:#fff}
+.activity-highlight>time{color:var(--navy);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.activity-highlight-kicker{margin:0 0 8px;color:var(--blue);font-size:9px;font-weight:700;letter-spacing:.15em}
+.activity-highlight h3{margin:0 0 10px;color:var(--navy);font-size:19px}
+.activity-highlight p:not(.activity-highlight-kicker){max-width:720px;color:#5e6f7b;font-size:12px;line-height:2}
+.activity-highlight a,.activity-history-note a{display:inline-block;margin-top:8px;color:var(--blue);font-size:11px;font-weight:700;text-decoration:none}
+.activity-history-intro{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.activity-history-intro p{margin:0;color:var(--muted);font-size:12px;line-height:2}
+.activity-history-intro span{color:#87949e;font-size:9px;letter-spacing:.13em;white-space:nowrap}
+.activity-history-list{border-top:1px solid var(--line)}
+.history-entry{display:grid;grid-template-columns:190px minmax(0,1fr);gap:34px;padding:34px 0;border-bottom:1px solid var(--line)}
+.history-date time{display:block;color:var(--navy);font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.history-date span{display:block;margin-top:8px;color:#8b98a1;font-size:8px;font-weight:700;letter-spacing:.12em}
+.history-category{margin:0 0 8px;color:var(--blue);font-size:10px;font-weight:700}
+.history-body h2{margin:0 0 14px;color:var(--navy);font-size:21px;line-height:1.6}
+.history-body p:not(.history-category){margin:9px 0;color:#596b78;font-size:12px;line-height:2.05}
+.activity-history-note{margin-top:34px;padding:22px 25px;border:1px solid var(--line);background:#f7f9fa}
+.activity-history-note strong{color:var(--navy);font-size:13px}
+.activity-history-note p{margin:8px 0;color:var(--muted);font-size:11px;line-height:1.9}
+.legal-document{max-width:900px;margin:0 auto}
+.legal-lead{margin:0 0 30px;padding:22px 25px;border-left:3px solid var(--navy);background:#f4f7f9;color:#465967;font-size:12px;line-height:2.1}
+.legal-section{padding:25px 0;border-bottom:1px solid var(--line)}
+.legal-section>span{color:#81909a;font-size:9px;font-weight:700;letter-spacing:.14em}
+.legal-section h2{margin:7px 0 12px;color:var(--navy);font-size:18px}
+.legal-section p,.legal-section li{color:#596b78;font-size:12px;line-height:2.05}
+.legal-section ul{padding-left:1.4em}
+.legal-meta{margin-top:28px;padding:20px 23px;background:#f7f9fa;color:var(--muted);font-size:11px;line-height:2}
+.legal-meta p{margin:4px 0}
+.legal-meta a{color:var(--blue)}
+@media(max-width:760px){
+ .activity-highlight,.history-entry{grid-template-columns:1fr;gap:13px;padding:22px 18px}
+ .activity-highlight{padding:22px 18px}
+ .activity-highlight h3,.history-body h2{font-size:17px}
+ .activity-history-intro{align-items:flex-start;flex-direction:column;gap:8px}
+ .history-date time{font-size:18px}
+ .legal-lead{padding:18px}
+ .legal-section{padding:21px 0}
+}
