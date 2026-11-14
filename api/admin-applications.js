@@ -26,11 +26,14 @@ async function admin(req){
  const user=await response.json();
  return user.app_metadata?.role==="admin"?user:null;
 }
-const serviceHeaders=()=>({
- apikey:process.env.SUPABASE_SERVICE_ROLE_KEY,
- Authorization:"Bearer "+process.env.SUPABASE_SERVICE_ROLE_KEY,
- "Content-Type":"application/json"
-});
+const serviceKey=()=>process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY||"";
+const serviceHeaders=()=>{
+ const key=serviceKey();
+ const headers={apikey:key,"Content-Type":"application/json"};
+ // sb_secret_* is an opaque API key, not a JWT. Do not send it as a Bearer token.
+ if(!key.startsWith("sb_secret_"))headers.Authorization="Bearer "+key;
+ return headers;
+};
 module.exports=async function handler(req,res){
  if(!cors(req,res))return send(res,403,{error:"この送信元からのアクセスは許可されていません。"});
  if(req.method==="OPTIONS")return res.status(204).end();
@@ -38,7 +41,7 @@ module.exports=async function handler(req,res){
   res.setHeader("Allow","GET, PATCH, OPTIONS");
   return send(res,405,{error:"Method not allowed"});
  }
- if(!base()||!process.env.SUPABASE_ANON_KEY||!process.env.SUPABASE_SERVICE_ROLE_KEY){
+ if(!base()||!process.env.SUPABASE_ANON_KEY||!serviceKey()){
   return send(res,503,{error:"管理APIのサーバー設定が完了していません。"});
  }
  try{
