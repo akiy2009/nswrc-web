@@ -343,7 +343,7 @@
  .ns-side-brand img{width:34px;height:34px}
  .ns-side-brand>span{font-size:14px}
  .ns-side-section-label{display:none}
- .ns-side-nav{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+ .ns-side-nav{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
  .ns-side-link{justify-content:center;gap:5px;min-height:39px;padding:0 5px;font-size:10px}
  .ns-side-mark{display:none}
  .ns-nav-count{min-width:17px;padding:2px 4px}
