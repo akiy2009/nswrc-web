@@ -24,7 +24,7 @@
 </form></div></section></main>
 <footer class="footer"><div class="container footer-main"><a class="footer-brand" href="index.html"><img src="assets/nswrc-logo.svg" alt=""><span>全国学生無線通信研究会</span></a><nav><a href="join.html">参加・入会案内</a><a href="news.html">お知らせ</a><a href="contact.html">お問い合わせ</a><a href="privacy.html">個人情報の取り扱い</a></nav></div><div class="container footer-bottom"><span>© 全国学生無線通信研究会</span><a href="#main">ページ上部へ ↑</a></div></footer>
 <script>
-const API_BASE='https://nswrc-membership-git-main-gakusei-bot.vercel.app';
+const API_BASE='https://nswrc-membership-gakusei-bot.vercel.app';
 const form=document.getElementById('membership-form'),statusBox=document.getElementById('form-status'),submitButton=document.getElementById('submit-button'),message=document.getElementById('message'),counter=document.getElementById('message-count');
 message.addEventListener('input',()=>counter.textContent=message.value.length.toLocaleString('ja-JP')+' / 2,000文字');
 form.addEventListener('submit',async event=>{event.preventDefault();if(!form.reportValidity())return;submitButton.disabled=true;submitButton.textContent='送信しています…';statusBox.hidden=true;
