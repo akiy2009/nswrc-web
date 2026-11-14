@@ -3,9 +3,9 @@
 </style></head><body><header class="header"><div class="container header-inner"><a class="brand" href="index.html"><img class="brand-logo" src="assets/nswrc-logo.svg" alt=""><span class="brand-copy"><span class="brand-name">全国学生無線通信研究会</span><span class="brand-en">MEMBERSHIP ADMINISTRATION</span></span></a></div></header>
 <main class="admin-wrap"><p class="eyebrow">ADMINISTRATION</p><h1>入会申込管理</h1><section id="login" class="admin-panel"><h2>管理者ログイン</h2><p class="admin-muted">Supabase Authで管理者として登録されたアカウントのみ利用できます。</p><label>メールアドレス<input id="email" type="email" autocomplete="username"></label><label>パスワード<input id="password" type="password" autocomplete="current-password"></label><button id="login-button" class="button button-primary">ログイン</button><p id="login-error" role="alert"></p></section>
 <section id="dashboard" hidden><div class="admin-toolbar"><p id="admin-count" class="admin-muted"></p><button id="logout" class="button button-text">ログアウト</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>申込日時</th><th>氏名・所属</th><th>連絡先</th><th>区分・関心</th><th>メッセージ</th><th>状態</th></tr></thead><tbody id="applications"></tbody></table></div></section><p id="admin-status" role="status" class="admin-muted"></p></main>
-<script>
+<script src="admin-config.js"></script><script>
 const SUPABASE_URL=window.NSWRC_SUPABASE_URL||"",SUPABASE_ANON_KEY=window.NSWRC_SUPABASE_ANON_KEY||"";
-const API_BASE='https://nswrc-membership-git-main-gakusei-bot.vercel.app';
+const API_BASE='https://nswrc-membership-gakusei-bot.vercel.app';
 let client=null,accessToken=null;
 const login=document.getElementById('login'),dashboard=document.getElementById('dashboard'),status=document.getElementById('admin-status');
 if(SUPABASE_URL&&SUPABASE_ANON_KEY)client=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
