@@ -1,0 +1,103 @@
+const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
+const key=()=>process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY||"";
+const headers=()=>{const k=key(),h={apikey:k,"Content-Type":"application/json"};if(!k.startsWith("sb_secret_"))h.Authorization="Bearer "+k;return h;};
+const allowed=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
+function send(res,status,data){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(data);}
+async function admin(req){const raw=req.headers.authorization||"",token=raw.startsWith("Bearer ")?raw.slice(7):"";if(!token)return null;const r=await fetch(base()+"/auth/v1/user",{headers:{apikey:process.env.SUPABASE_ANON_KEY,Authorization:"Bearer "+token}});if(!r.ok)return null;const u=await r.json();return u.app_metadata?.role==="admin"?u:null;}
+async function db(path,options={}){const r=await fetch(base()+"/rest/v1/"+path,{...options,headers:{...headers(),...(options.headers||{})}});const raw=await r.text();let data;try{data=raw?JSON.parse(raw):null;}catch{data={};}if(!r.ok){const e=new Error("データベース処理に失敗しました。");e.status=r.status;e.detail=data;throw e;}return data;}
+const enc=v=>encodeURIComponent(String(v));
+const validId=v=>/^[0-9a-f-]{36}$/i.test(String(v||""));
+const clean=(v,n)=>typeof v==="string"?v.trim().slice(0,n):"";
+module.exports=async function handler(req,res){
+ const origin=req.headers.origin;if(origin&&!allowed().includes(origin.replace(/\/$/,"")))return send(res,403,{error:"この送信元からのアクセスは許可されていません。"});
+ if(origin)res.setHeader("Access-Control-Allow-Origin",origin);res.setHeader("Vary","Origin");res.setHeader("Access-Control-Allow-Methods","GET, POST, PATCH, OPTIONS");res.setHeader("Access-Control-Allow-Headers","Authorization, Content-Type");
+ if(req.method==="OPTIONS")return res.status(204).end();if(!["GET","POST","PATCH"].includes(req.method)){res.setHeader("Allow","GET, POST, PATCH, OPTIONS");return send(res,405,{error:"Method not allowed"});}
+ if(!base()||!key()||!process.env.SUPABASE_ANON_KEY)return send(res,503,{error:"管理APIのサーバー設定が完了していません。"});
+ try{
+  const user=await admin(req);if(!user)return send(res,401,{error:"管理者としてログインしてください。"});
+  const h={Prefer:"return=representation"};
+  if(req.method==="GET"){
+   const [members,apps,activities,events,attendees,broadcasts]=await Promise.all([
+    db("members?select=*&order=joined_at.desc&limit=2000"),
+    db("membership_applications?select=id,full_name,email,affiliation,grade,callsign,region,created_at,status&status=eq.approved&order=created_at.asc&limit=500"),
+    db("member_activities?select=*&order=happened_at.desc&limit=2000"),
+    db("member_events?select=*&order=starts_at.desc&limit=500"),
+    db("member_event_attendees?select=*&limit=5000"),
+    db("member_broadcasts?select=*&order=created_at.desc&limit=200")
+   ]);
+   return send(res,200,{members,approvedApplications:apps,activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
+  }
+  const b=req.body||{},action=clean(b.action,40);
+  if(req.method==="POST"){
+   if(action==="createFromApplication"){
+    const id=clean(b.application_id,64);if(!validId(id))return send(res,400,{error:"申込IDが不正です。"});
+    const rows=await db("membership_applications?id=eq."+enc(id)+"&select=id,status,full_name,email,affiliation,grade,callsign,region&limit=1");
+    if(!rows.length||rows[0].status!=="approved")return send(res,409,{error:"承認済みの申込だけ会員登録できます。"});
+    const a=rows[0],existing=await db("members?source_application_id=eq."+enc(id)+"&select=id&limit=1");if(existing.length)return send(res,409,{error:"この申込はすでに会員登録されています。"});
+    const member_number="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
+    const rows2=await db("members",{method:"POST",headers:h,body:JSON.stringify({source_application_id:id,member_number,full_name:a.full_name,email:a.email,affiliation:a.affiliation,grade:a.grade,callsign:a.callsign,region:a.region,joined_at:new Date().toISOString(),membership_status:"active",email_opt_in:false})});
+    return send(res,201,{member:rows2[0]});
+   }
+   if(action==="createMember"){
+    const name=clean(b.full_name,100),email=clean(b.email,254).toLowerCase();if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return send(res,400,{error:"氏名と有効なメールアドレスを入力してください。"});
+    const member_number=clean(b.member_number,40)||("NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase());
+    const rows=await db("members",{method:"POST",headers:h,body:JSON.stringify({member_number,full_name:name,email,affiliation:clean(b.affiliation,160),grade:clean(b.grade,40),callsign:clean(b.callsign,20).toUpperCase(),region:clean(b.region,100),joined_at:b.joined_at||new Date().toISOString(),membership_status:"active",email_opt_in:b.email_opt_in===true,admin_note:clean(b.admin_note,3000)})});
+    return send(res,201,{member:rows[0]});
+   }
+   if(action==="createActivity"){
+    if(!validId(b.member_id)||!clean(b.title,160))return send(res,400,{error:"会員と活動名を指定してください。"});
+    const rows=await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:b.member_id,activity_type:["note","meeting","radio","research","event","other"].includes(b.activity_type)?b.activity_type:"note",title:clean(b.title,160),description:clean(b.description,3000),happened_at:b.happened_at||new Date().toISOString(),created_by:user.id,created_by_email:user.email||""})});return send(res,201,{activity:rows[0]});
+   }
+   if(action==="createEvent"){
+    const title=clean(b.title,160),starts_at=clean(b.starts_at,50);if(!title||!Number.isFinite(Date.parse(starts_at)))return send(res,400,{error:"イベント名と開始日時を入力してください。"});
+    const rows=await db("member_events",{method:"POST",headers:h,body:JSON.stringify({title,description:clean(b.description,3000),location:clean(b.location,200),starts_at,ends_at:b.ends_at||null,capacity:b.capacity?Number(b.capacity):null,status:"planned",created_by:user.id})});return send(res,201,{event:rows[0]});
+   }
+   if(action==="registerAttendee"){
+    if(!validId(b.event_id)||!validId(b.member_id))return send(res,400,{error:"イベントと会員を指定してください。"});
+    const rows=await db("member_event_attendees?on_conflict=event_id,member_id",{method:"POST",headers:{...h,Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({event_id:b.event_id,member_id:b.member_id,attendance_status:["registered","attended","absent","cancelled"].includes(b.attendance_status)?b.attendance_status:"registered",note:clean(b.note,1000)})});return send(res,201,{attendee:rows[0]});
+   }
+   if(action==="createBroadcast"){
+    const subject=clean(b.subject,200),body=clean(b.body,10000);if(!subject||!body)return send(res,400,{error:"件名と本文を入力してください。"});
+    const rows=await db("member_broadcasts",{method:"POST",headers:h,body:JSON.stringify({subject,body,audience:"active_opted_in",created_by:user.id,created_by_email:user.email||""})});return send(res,201,{broadcast:rows[0]});
+   }
+   if(action==="sendBroadcast"){
+    if(!process.env.RESEND_API_KEY||!process.env.MAIL_FROM)return send(res,503,{error:"一斉連絡の送信設定が未完了です。RESEND_API_KEY と MAIL_FROM をVercelに設定してください。"});
+    const id=clean(b.broadcast_id,64);if(!validId(id))return send(res,400,{error:"配信IDが不正です。"});
+    const drafts=await db("member_broadcasts?id=eq."+enc(id)+"&select=*&limit=1");if(!drafts.length||drafts[0].status!=="draft")return send(res,409,{error:"下書き状態の配信だけ送信できます。"});
+    const recipients=await db("members?select=id,full_name,email&membership_status=eq.active&email_opt_in=eq.true&order=created_at.asc&limit=2000");
+    if(!recipients.length)return send(res,409,{error:"配信に同意した在籍会員がいません。"});
+    await db("member_broadcasts?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify({status:"sending",recipient_count:recipients.length})});
+    let sent=0,failed=0;
+    for(const m of recipients){
+     let state="failed",messageId=null,errorText="";
+     try{const r=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({from:process.env.MAIL_FROM,to:[m.email],subject:drafts[0].subject,text:drafts[0].body})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||"メール送信に失敗しました。");state="sent";messageId=data.id||null;sent++;}catch(e){errorText=String(e.message||"送信失敗").slice(0,300);failed++;}
+     await db("member_broadcast_recipients",{method:"POST",headers:h,body:JSON.stringify({broadcast_id:id,member_id:m.id,email:m.email,recipient_name:m.full_name,status:state,provider_message_id:messageId,error_message:errorText,sent_at:state==="sent"?new Date().toISOString():null})});
+    }
+    const status=failed===0?"sent":sent===0?"failed":"partial";
+    await db("member_broadcasts?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify({status,sent_count:sent,failed_count:failed,sent_at:new Date().toISOString()})});
+    return send(res,200,{sent,failed,total:recipients.length,status});
+   }
+   return send(res,400,{error:"不明な操作です。"});
+  }
+  const id=clean(b.id,64);if(!validId(id))return send(res,400,{error:"更新対象IDが不正です。"});
+  if(action==="member"){
+   const patch={updated_at:new Date().toISOString()};
+   for(const [k,max] of Object.entries({full_name:100,email:254,affiliation:160,grade:40,callsign:20,region:100,admin_note:3000}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);
+   if(Object.prototype.hasOwnProperty.call(b,"email_opt_in"))patch.email_opt_in=b.email_opt_in===true;
+   if(Object.prototype.hasOwnProperty.call(b,"joined_at"))patch.joined_at=b.joined_at;
+   if(Object.prototype.hasOwnProperty.call(b,"membership_status")){if(!["active","suspended","withdrawn"].includes(b.membership_status))return send(res,400,{error:"在籍状況が不正です。"});patch.membership_status=b.membership_status;patch.left_at=b.membership_status==="withdrawn"?(b.left_at||new Date().toISOString()):null;}
+   if(patch.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email))return send(res,400,{error:"メールアドレスが不正です。"});
+   const rows=await db("members?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});if(!rows.length)return send(res,404,{error:"会員が見つかりません。"});return send(res,200,{member:rows[0]});
+  }
+  if(action==="attendee"){
+   const patch={};if(["registered","attended","absent","cancelled"].includes(b.attendance_status))patch.attendance_status=b.attendance_status;if(Object.prototype.hasOwnProperty.call(b,"note"))patch.note=clean(b.note,1000);
+   const rows=await db("member_event_attendees?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});return send(res,200,{attendee:rows[0]||null});
+  }
+  if(action==="event"){
+   const patch={updated_at:new Date().toISOString()};for(const [k,max] of Object.entries({title:160,description:3000,location:200}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);
+   if(["planned","completed","cancelled"].includes(b.status))patch.status=b.status;
+   const rows=await db("member_events?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});return send(res,200,{event:rows[0]||null});
+  }
+  return send(res,400,{error:"不明な更新操作です。"});
+ }catch(e){console.error("Member admin API failed",e.status||"",e.detail||e.message);return send(res,e.status&&e.status<500?e.status:502,{error:e.message||"管理APIでエラーが発生しました。"});}
+};
