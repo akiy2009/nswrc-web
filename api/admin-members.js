@@ -31,11 +31,11 @@ module.exports=async function handler(req,res){
   if(req.method==="POST"){
    if(action==="createFromApplication"){
     const id=clean(b.application_id,64);if(!validId(id))return send(res,400,{error:"申込IDが不正です。"});
-    const rows=await db("membership_applications?id=eq."+enc(id)+"&select=id,status,full_name,email,affiliation,grade,callsign,region&limit=1");
+    const rows=await db("membership_applications?id=eq."+enc(id)+"&select=id,status,full_name,email,affiliation,grade,callsign,region,created_at,updated_at&limit=1");
     if(!rows.length||rows[0].status!=="approved")return send(res,409,{error:"承認済みの申込だけ会員登録できます。"});
     const a=rows[0],existing=await db("members?source_application_id=eq."+enc(id)+"&select=id&limit=1");if(existing.length)return send(res,409,{error:"この申込はすでに会員登録されています。"});
     const member_number="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
-    const rows2=await db("members",{method:"POST",headers:h,body:JSON.stringify({source_application_id:id,member_number,full_name:a.full_name,email:a.email,affiliation:a.affiliation,grade:a.grade,callsign:a.callsign,region:a.region,joined_at:new Date().toISOString(),membership_status:"active",email_opt_in:false})});
+    const rows2=await db("members",{method:"POST",headers:h,body:JSON.stringify({source_application_id:id,member_number,full_name:a.full_name,email:a.email,affiliation:a.affiliation,grade:a.grade,callsign:a.callsign,region:a.region,joined_at:a.updated_at||a.created_at||new Date().toISOString(),membership_status:"active",email_opt_in:false})});
     return send(res,201,{member:rows2[0]});
    }
    if(action==="createMember"){
