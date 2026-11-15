@@ -632,3 +632,18 @@
  .ns-footer{padding:14px;flex-direction:column;gap:5px}
 }
 @media(prefers-reduced-motion:reduce){.ns-admin *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Membership application email preference and emergency notice controls */
+.application-page .application-mail-consent{grid-column:1/-1}
+.application-page .application-mail-consent .application-consent{display:flex;align-items:flex-start;gap:12px;padding:18px;background:#f3f7fa;border:1px solid #dce5eb;color:#344b5d;font-size:13px;line-height:1.8}
+.application-page .application-mail-consent input{flex:0 0 auto;margin-top:5px}
+.application-page .application-mail-consent strong{color:#17364f}
+.application-page #email_confirm{letter-spacing:.01em}
+.ns-emergency-toggle{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid #e1c18b;background:#fffaf1;color:#604b2b;cursor:pointer}
+.ns-emergency-toggle input{flex:0 0 auto;margin-top:4px;width:18px;height:18px}
+.ns-emergency-toggle strong,.ns-emergency-toggle small{display:block}
+.ns-emergency-toggle strong{font-size:13px}
+.ns-emergency-toggle small{margin-top:5px;font-size:11px;line-height:1.7;color:#806a48}
+.ns-emergency-disclosure{padding:14px 16px;border-left:3px solid #b77927;background:#fff8eb;color:#76572a;font-size:12px;line-height:1.8}
+#emergency-reason-wrap[hidden],#emergency-disclosure[hidden],#approval-mail[hidden]{display:none!important}
+#emergency-reason-wrap input{width:100%;min-height:44px;padding:10px;border:1px solid #d7c5a5;background:#fff}
