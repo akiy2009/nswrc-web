@@ -50,7 +50,7 @@ module.exports=async function handler(req,res){
   const headers=serviceHeaders();
   if(req.method==="GET"){
    const [appsRes,auditRes]=await Promise.all([
-    fetch(base()+"/rest/v1/membership_applications?select=id,application_type,full_name,email,affiliation,grade,callsign,region,interests,message,admin_note,status,created_at,updated_at&order=created_at.desc&limit=200",{headers}),
+    fetch(base()+"/rest/v1/membership_applications?select=id,application_type,full_name,email,email_opt_in,affiliation,grade,callsign,region,interests,message,admin_note,status,created_at,updated_at&order=created_at.desc&limit=200",{headers}),
     fetch(base()+"/rest/v1/membership_admin_audit?select=id,application_id,actor_email,action,old_status,new_status,created_at&order=created_at.desc&limit=100",{headers})
    ]);
    const apps=await appsRes.json().catch(()=>[]);
@@ -114,7 +114,7 @@ module.exports=async function handler(req,res){
     }
    }else if(linked.ok){
     const memberNumber="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
-    const created=await fetch(base()+"/rest/v1/members",{method:"POST",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({source_application_id:id,member_number:memberNumber,full_name:app.full_name,email:app.email,affiliation:app.affiliation||"",grade:app.grade||"",callsign:app.callsign||"",region:app.region||"",joined_at:new Date().toISOString(),membership_status:"active",email_opt_in:false})});
+    const created=await fetch(base()+"/rest/v1/members",{method:"POST",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({source_application_id:id,member_number:memberNumber,full_name:app.full_name,email:app.email,affiliation:app.affiliation||"",grade:app.grade||"",callsign:app.callsign||"",region:app.region||"",email_opt_in:app.email_opt_in===true,joined_at:new Date().toISOString(),membership_status:"active",email_opt_in:false})});
     memberCreated=created.ok;memberWarning=!created.ok;
    }else memberWarning=true;
   }
