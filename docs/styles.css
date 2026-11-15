@@ -782,3 +782,36 @@ body:not(.ns-admin) .footer nav{gap:18px;font-size:10px}
 .join-top-cta p{margin:6px 0 0;color:#5b6c79;font-size:12px;line-height:1.9}
 .join-top-cta .button{flex:0 0 auto}
 @media(max-width:760px){.join-home-actions{align-items:flex-start;flex-direction:column;gap:12px}.join-top-cta{align-items:flex-start;flex-direction:column;padding:18px;margin-bottom:30px}.join-top-cta .button{width:100%;justify-content:center}}
+
+
+/* =========================================================
+   NSWRC layout alignment fix
+   Keep shared page containers centered and prevent edge drift.
+   ========================================================= */
+html,body{max-width:100%;overflow-x:clip}
+body{width:100%;min-width:320px}
+.container,
+body:not(.ns-admin) .container{
+  width:min(var(--content,1160px),calc(100% - 64px));
+  max-width:var(--content,1160px);
+  margin-left:auto;
+  margin-right:auto;
+}
+.header-inner,.footer-main,.footer-bottom{min-width:0}
+main,section,header,footer{min-width:0}
+img,svg,video,iframe{max-width:100%}
+.page-content>.container,
+.page-hero>.container,
+.breadcrumb>.container{margin-left:auto;margin-right:auto}
+.privacy-layout,.application-shell,.legal-document,.admin-shell{min-width:0}
+@media(max-width:900px){
+  .container,body:not(.ns-admin) .container{width:calc(100% - 48px)}
+}
+@media(max-width:760px){
+  .container,body:not(.ns-admin) .container{width:calc(100% - 40px)}
+  .page-content>.container,.page-hero>.container,.breadcrumb>.container{width:calc(100% - 40px)}
+}
+@media(max-width:380px){
+  .container,body:not(.ns-admin) .container{width:calc(100% - 32px)}
+  .page-content>.container,.page-hero>.container,.breadcrumb>.container{width:calc(100% - 32px)}
+}
