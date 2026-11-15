@@ -773,3 +773,12 @@ body:not(.ns-admin) .footer nav{gap:18px;font-size:10px}
  body:not(.ns-admin) .footer nav{gap:14px 18px}
  body:not(.ns-admin) .footer-bottom{gap:12px;align-items:flex-start;flex-direction:column;padding-top:14px;padding-bottom:14px}
 }
+
+/* Membership conversion actions */
+.hero-links .button-primary{min-width:220px}
+.join-home-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.join-top-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 26px;margin:0 0 42px;border:1px solid var(--line);border-left:4px solid var(--blue);background:#f5f8fa}
+.join-top-cta strong{color:var(--navy);font-size:14px}
+.join-top-cta p{margin:6px 0 0;color:#5b6c79;font-size:12px;line-height:1.9}
+.join-top-cta .button{flex:0 0 auto}
+@media(max-width:760px){.join-home-actions{align-items:flex-start;flex-direction:column;gap:12px}.join-top-cta{align-items:flex-start;flex-direction:column;padding:18px;margin-bottom:30px}.join-top-cta .button{width:100%;justify-content:center}}
