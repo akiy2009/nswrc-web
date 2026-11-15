@@ -68,10 +68,24 @@ module.exports=async function handler(req,res){
     if(!recipients.length)return send(res,409,{error:"配信に同意した在籍会員がいません。"});
     await db("member_broadcasts?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify({status:"sending",recipient_count:recipients.length})});
     let sent=0,failed=0;
-    for(const m of recipients){
-     let state="failed",messageId=null,errorText="";
-     try{const emailText=drafts[0].body+"\\n\\n――――――――――\\nこのメールは、全国学生無線通信研究会からのご案内です。\\n配信停止を希望する場合は、公式サイトのお問い合わせフォームからご連絡ください。\\nhttps://akiy2009.github.io/nswrc-web/contact.html";const r=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({from:process.env.MAIL_FROM,to:[m.email],subject:drafts[0].subject,text:emailText})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||"メール送信に失敗しました。");state="sent";messageId=data.id||null;sent++;}catch(e){errorText=String(e.message||"送信失敗").slice(0,300);failed++;}
-     await db("member_broadcast_recipients",{method:"POST",headers:h,body:JSON.stringify({broadcast_id:id,member_id:m.id,email:m.email,recipient_name:m.full_name,status:state,provider_message_id:messageId,error_message:errorText,sent_at:state==="sent"?new Date().toISOString():null})});
+    const emailText=drafts[0].body+"\\n\\n――――――――――\\nこのメールは、全国学生無線通信研究会からのご案内です。\\n配信停止を希望する場合は、公式サイトのお問い合わせフォームからご連絡ください。\\nhttps://akiy2009.github.io/nswrc-web/contact.html";
+    const batches=[];for(let i=0;i<recipients.length;i+=100)batches.push(recipients.slice(i,i+100));
+    for(let i=0;i<batches.length;i+=4){
+     const wave=batches.slice(i,i+4);
+     const results=await Promise.all(wave.map(async(batch,index)=>{
+      let ids=[],errorText="";
+      try{
+       const payload=batch.map(m=>({from:process.env.MAIL_FROM,to:[m.email],subject:drafts[0].subject,text:emailText}));
+       const r=await fetch("https://api.resend.com/emails/batch",{method:"POST",headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json","Idempotency-Key":"nswrc-broadcast/"+id+"/"+(i+index)},body:JSON.stringify(payload)});
+       const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||"メール一括送信に失敗しました。");
+       ids=Array.isArray(data.data)?data.data:[];
+      }catch(e){errorText=String(e.message||"送信失敗").slice(0,300);}
+      const rows=batch.map((m,j)=>({broadcast_id:id,member_id:m.id,email:m.email,recipient_name:m.full_name,status:ids[j]?.id?"sent":"failed",provider_message_id:ids[j]?.id||null,error_message:ids[j]?.id?"":(errorText||"送信結果を確認できませんでした。"),sent_at:ids[j]?.id?new Date().toISOString():null}));
+      const ok=rows.filter(x=>x.status==="sent").length,bad=rows.length-ok;
+      try{await db("member_broadcast_recipients",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(rows)});}catch(e){console.error("Broadcast recipient log failed",e.message);}
+      return {sent:ok,failed:bad};
+     }));
+     for(const result of results){sent+=result.sent;failed+=result.failed;}
     }
     const status=failed===0?"sent":sent===0?"failed":"partial";
     await db("member_broadcasts?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify({status,sent_count:sent,failed_count:failed,sent_at:new Date().toISOString()})});
