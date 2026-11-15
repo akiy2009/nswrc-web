@@ -57,18 +57,23 @@ module.exports=async function handler(req,res){
     const rows=await db("member_event_attendees?on_conflict=event_id,member_id",{method:"POST",headers:{...h,Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({event_id:b.event_id,member_id:b.member_id,attendance_status:["registered","attended","absent","cancelled"].includes(b.attendance_status)?b.attendance_status:"registered",note:clean(b.note,1000)})});return send(res,201,{attendee:rows[0]});
    }
    if(action==="createBroadcast"){
-    const subject=clean(b.subject,200),body=clean(b.body,10000);if(!subject||!body)return send(res,400,{error:"件名と本文を入力してください。"});
-    const rows=await db("member_broadcasts",{method:"POST",headers:h,body:JSON.stringify({subject,body,audience:"active_opted_in",created_by:user.id,created_by_email:user.email||""})});return send(res,201,{broadcast:rows[0]});
+    const subject=clean(b.subject,200),body=clean(b.body,10000),audience=b.audience==="active_all_emergency"?"active_all_emergency":"active_opted_in",emergency_reason=clean(b.emergency_reason,500);
+    if(!subject||!body)return send(res,400,{error:"件名と本文を入力してください。"});
+    if(audience==="active_all_emergency"&&!emergency_reason)return send(res,400,{error:"緊急連絡の理由を入力してください。"});
+    const rows=await db("member_broadcasts",{method:"POST",headers:h,body:JSON.stringify({subject,body,audience,emergency_reason,created_by:user.id,created_by_email:user.email||""})});return send(res,201,{broadcast:rows[0]});
    }
    if(action==="sendBroadcast"){
     if(!process.env.RESEND_API_KEY||!process.env.MAIL_FROM)return send(res,503,{error:"一斉連絡の送信設定が未完了です。RESEND_API_KEY と MAIL_FROM をVercelに設定してください。"});
     const id=clean(b.broadcast_id,64);if(!validId(id))return send(res,400,{error:"配信IDが不正です。"});
     const drafts=await db("member_broadcasts?id=eq."+enc(id)+"&select=*&limit=1");if(!drafts.length||drafts[0].status!=="draft")return send(res,409,{error:"下書き状態の配信だけ送信できます。"});
-    const recipients=await db("members?select=id,full_name,email&membership_status=eq.active&email_opt_in=eq.true&order=created_at.asc&limit=2000");
-    if(!recipients.length)return send(res,409,{error:"配信に同意した在籍会員がいません。"});
+    const emergency=drafts[0].audience==="active_all_emergency";
+    if(emergency&&!String(drafts[0].emergency_reason||"").trim())return send(res,409,{error:"緊急連絡の理由が記録されていません。"});
+    const recipients=await db("members?select=id,full_name,email&membership_status=eq.active"+(emergency?"":"&email_opt_in=eq.true")+"&order=created_at.asc&limit=2000");
+    if(!recipients.length)return send(res,409,{error:emergency?"送信対象となる在籍会員がいません。":"配信に同意した在籍会員がいません。"});
     await db("member_broadcasts?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify({status:"sending",recipient_count:recipients.length})});
     let sent=0,failed=0;
-    const emailText=drafts[0].body+"\\n\\n――――――――――\\nこのメールは、全国学生無線通信研究会からのご案内です。\\n配信停止を希望する場合は、公式サイトのお問い合わせフォームからご連絡ください。\\nhttps://akiy2009.github.io/nswrc-web/contact.html";
+    const emergencyNotice=emergency?"【緊急連絡に関するお知らせ】\\n本メールは「"+drafts[0].emergency_reason+"」のため、通常のメール配信に同意していない在籍会員にも送信しています。安全確保または重大な運営上の緊急対応に必要な範囲に限った連絡であり、通常のお知らせ・宣伝を目的とするものではありません。\\n\\n":"";
+    const emailText=emergencyNotice+drafts[0].body+"\\n\\n――――――――――\\nこのメールは、全国学生無線通信研究会からのご案内です。\\n"+(emergency?"本メールは緊急連絡として送信しています。":"配信停止を希望する場合は、公式サイトのお問い合わせフォームからご連絡ください。")+"\\nhttps://akiy2009.github.io/nswrc-web/contact.html";
     const batches=[];for(let i=0;i<recipients.length;i+=100)batches.push(recipients.slice(i,i+100));
     for(let i=0;i<batches.length;i+=4){
      const wave=batches.slice(i,i+4);
