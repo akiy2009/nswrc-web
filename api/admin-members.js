@@ -72,8 +72,8 @@ module.exports=async function handler(req,res){
     if(!recipients.length)return send(res,409,{error:emergency?"送信対象となる在籍会員がいません。":"配信に同意した在籍会員がいません。"});
     await db("member_broadcasts?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify({status:"sending",recipient_count:recipients.length})});
     let sent=0,failed=0;
-    const emergencyNotice=emergency?"【緊急連絡に関するお知らせ】\\n本メールは「"+drafts[0].emergency_reason+"」のため、通常のメール配信に同意していない在籍会員にも送信しています。安全確保または重大な運営上の緊急対応に必要な範囲に限った連絡であり、通常のお知らせ・宣伝を目的とするものではありません。\\n\\n":"";
-    const emailText=emergencyNotice+drafts[0].body+"\\n\\n――――――――――\\nこのメールは、全国学生無線通信研究会からのご案内です。\\n"+(emergency?"本メールは緊急連絡として送信しています。":"配信停止を希望する場合は、公式サイトのお問い合わせフォームからご連絡ください。")+"\\nhttps://akiy2009.github.io/nswrc-web/contact.html";
+    const emergencyNotice=emergency?"【緊急連絡に関するお知らせ】\n本メールは「"+drafts[0].emergency_reason+"」のため、通常のメール配信に同意していない在籍会員にも送信しています。安全確保または重大な運営上の緊急対応に必要な範囲に限った連絡であり、通常のお知らせ・宣伝を目的とするものではありません。\n\n":"";
+    const emailText=emergencyNotice+drafts[0].body+"\n\n――――――――――\nこのメールは、全国学生無線通信研究会からのご案内です。\n"+(emergency?"本メールは緊急連絡として送信しています。":"配信停止を希望する場合は、公式サイトのお問い合わせフォームからご連絡ください。")+"\nhttps://akiy2009.github.io/nswrc-web/contact.html";
     const batches=[];for(let i=0;i<recipients.length;i+=100)batches.push(recipients.slice(i,i+100));
     for(let i=0;i<batches.length;i+=4){
      const wave=batches.slice(i,i+4);
