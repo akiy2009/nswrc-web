@@ -75,7 +75,7 @@ module.exports=async function handler(req,res){
   const existingRows=await existingRes.json().catch(()=>[]);
   if(!existingRes.ok||!existingRows.length)return send(res,404,{error:"対象の申込が見つかりません。"});
   const before=existingRows[0],patch={updated_at:new Date().toISOString()};
-  if(hasStatus)patch.status=status;
+  if(hasStatus){patch.status=status;if(before.status!==status)patch.approval_notice_sent_at=null;}
   if(hasNote)patch.admin_note=note;
   if(hasApprovalNotice){if(before.status!=="approved")return send(res,409,{error:"承認通知は承認済みの申込にのみ記録できます。"});patch.approval_notice_sent_at=noticeAt;}
   if((!hasStatus||before.status===status)&&(!hasNote||(before.admin_note||"")===note)&&(!hasApprovalNotice||before.approval_notice_sent_at===noticeAt)){
