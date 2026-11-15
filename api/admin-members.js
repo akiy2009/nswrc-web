@@ -87,7 +87,10 @@ module.exports=async function handler(req,res){
    if(Object.prototype.hasOwnProperty.call(b,"joined_at"))patch.joined_at=b.joined_at;
    if(Object.prototype.hasOwnProperty.call(b,"membership_status")){if(!["active","suspended","withdrawn"].includes(b.membership_status))return send(res,400,{error:"在籍状況が不正です。"});patch.membership_status=b.membership_status;patch.left_at=b.membership_status==="withdrawn"?(b.left_at||new Date().toISOString()):null;}
    if(patch.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email))return send(res,400,{error:"メールアドレスが不正です。"});
-   const rows=await db("members?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});if(!rows.length)return send(res,404,{error:"会員が見つかりません。"});return send(res,200,{member:rows[0]});
+   const beforeRows=await db("members?id=eq."+enc(id)+"&select=id,membership_status&limit=1");if(!beforeRows.length)return send(res,404,{error:"会員が見つかりません。"});
+   const rows=await db("members?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});if(!rows.length)return send(res,404,{error:"会員が見つかりません。"});
+   if(patch.membership_status&&patch.membership_status!==beforeRows[0].membership_status){const label={active:"在籍",suspended:"休会・停止",withdrawn:"退会"};await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:id,activity_type:"other",title:"在籍状況を"+label[beforeRows[0].membership_status]+"から"+label[patch.membership_status]+"に変更",description:"管理者 "+(user.email||"")+" が在籍状況を更新しました。",happened_at:new Date().toISOString(),created_by:user.id,created_by_email:user.email||""})});}
+   return send(res,200,{member:rows[0]});
   }
   if(action==="attendee"){
    const patch={};if(["registered","attended","absent","cancelled"].includes(b.attendance_status))patch.attendance_status=b.attendance_status;if(Object.prototype.hasOwnProperty.call(b,"note"))patch.note=clean(b.note,1000);
