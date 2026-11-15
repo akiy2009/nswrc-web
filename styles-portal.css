@@ -550,3 +550,157 @@
 .ns-annual-table-panel{margin-top:20px;padding:20px}
 @media(max-width:900px){.ns-broadcast-layout{grid-template-columns:1fr}.ns-event-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.ns-member-edit-grid{grid-template-columns:1fr}.ns-import-panel .ns-recent-row{grid-template-columns:1fr;gap:6px}.ns-attendee-add{align-items:stretch;flex-direction:column}.ns-annual-chart{gap:5px}.ns-annual-column small{font-size:9px;transform:rotate(-35deg);transform-origin:top center}}
+
+
+/* =========================================================
+   ADMIN UI REFINEMENT — clarity, hierarchy and touch targets
+   ========================================================= */
+.ns-admin{font-size:14px}
+.ns-sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#456176 #102b40}
+.ns-side-nav{gap:4px;min-height:0}
+.ns-side-section-label{margin-top:16px;padding-top:13px;border-top:1px solid #294459}
+.ns-side-section-label:first-child{margin-top:0;padding-top:0;border-top:0}
+.ns-side-link{min-height:48px;font-size:13px;letter-spacing:.01em}
+.ns-side-link.is-active{position:relative;border-color:#355b73;background:#214a65}
+.ns-side-link.is-active:before{position:absolute;left:-1px;top:8px;bottom:8px;width:3px;background:#d5e4ed;content:""}
+.ns-side-mark{min-width:19px;font-size:10px}
+.ns-topbar{position:sticky;top:0;z-index:15;box-shadow:0 2px 8px rgba(20,48,66,.035)}
+.ns-topbar-title{font-size:16px}
+.ns-content{padding-top:40px}
+.ns-page-heading{align-items:center;margin-bottom:30px}
+.ns-page-heading>div>p:last-child{font-size:12px}
+.ns-heading-actions{gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.ns-primary-button,.ns-outline-button,.ns-secondary-button{min-height:44px;padding:0 18px;font-size:12px;gap:12px}
+.ns-small-button{min-height:42px}
+.ns-text-button{min-height:36px;padding:7px 9px;font-size:11px}
+.ns-metric-grid{gap:14px;margin-bottom:22px}
+.ns-metric{min-height:142px;padding:22px 23px}
+.ns-metric-primary{padding-top:20px}
+.ns-metric>span{font-size:11px}
+.ns-metric strong{font-size:36px}
+.ns-metric small{font-size:10px}
+.ns-overview-grid{gap:16px;margin-bottom:16px}
+.ns-panel-heading{padding:22px 24px}
+.ns-panel-heading h2{font-size:17px}
+.ns-panel-caption{font-size:10px}
+.ns-quick-link{min-height:76px;padding:17px 22px}
+.ns-quick-link strong{font-size:12px}
+.ns-quick-link small{font-size:10px}
+.ns-quick-note{padding:15px 16px}
+.ns-quick-note p{font-size:10px}
+.ns-filter-bar{gap:12px;padding:20px}
+.ns-filter-bar label{font-size:10px}
+.ns-filter-bar input,.ns-filter-bar select,.ns-table-toolbar select,.ns-setting-row select,.ns-detail-editor select{height:42px;font-size:12px;padding:0 11px}
+.ns-clear-button{height:42px;padding:0 14px;font-size:11px}
+.ns-table-toolbar{padding-top:22px;padding-bottom:13px}
+.ns-table-toolbar strong{font-size:14px}
+.ns-table-toolbar>div>span{font-size:11px}
+.ns-table th{height:46px;font-size:10px;padding:0 15px}
+.ns-table td{padding:15px;font-size:11px}
+.ns-person-cell strong{font-size:12px}
+.ns-person-cell small{font-size:10px}
+.ns-status{font-size:10px;padding:6px 9px}
+.ns-status-select{height:36px;font-size:11px}
+.ns-row-open{min-height:34px;padding:7px 11px;font-size:10px}
+.ns-pagination{font-size:10px;padding:16px 2px}
+.ns-pagination button{min-width:68px;height:36px;font-size:10px}
+.ns-event-card{padding:23px}
+.ns-event-card h2{font-size:19px}
+.ns-event-card p{font-size:12px;line-height:1.8}
+.ns-broadcast-compose>label{font-size:12px}
+.ns-broadcast-compose input,.ns-broadcast-compose textarea{font-size:13px}
+.ns-broadcast-audience{padding:17px}
+.ns-detail-head{padding:24px 27px}
+.ns-detail-fields{padding:12px 27px}
+.ns-detail-fields dt{font-size:10px}
+.ns-detail-fields dd{font-size:12px}
+.ns-detail-editor{padding:22px 27px 26px}
+.ns-detail-editor>label{font-size:11px}
+.ns-detail-editor textarea{font-size:12px}
+.ns-detail-actions{gap:12px;flex-wrap:wrap}
+.ns-toast{font-size:12px;padding:15px 19px}
+.ns-footer{font-size:9px}
+.ns-admin button:focus-visible,.ns-admin a:focus-visible,.ns-admin input:focus-visible,.ns-admin select:focus-visible,.ns-admin textarea:focus-visible{outline:3px solid #7aa0b8;outline-offset:2px}
+.ns-admin button:disabled{cursor:not-allowed}
+.ns-page-heading .ns-heading-actions .ns-primary-button{white-space:nowrap}
+.ns-table-toolbar>.ns-text-button{white-space:nowrap}
+.ns-filter-bar .ns-clear-button{align-self:end}
+.ns-panel+.ns-panel{margin-top:16px}
+@media(max-width:1100px){
+ .ns-app{grid-template-columns:228px minmax(0,1fr)}
+ .ns-sidebar{width:228px;padding-left:15px;padding-right:15px}
+ .ns-content{padding-left:28px;padding-right:28px}
+ .ns-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ns-filter-bar{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .ns-search-field{grid-column:span 2}
+}
+@media(max-width:800px){
+ .ns-app{display:block}
+ .ns-sidebar{position:sticky;top:0;inset:auto;width:100%;max-height:none;padding:10px 14px 9px;overflow:visible;z-index:30;box-shadow:0 3px 12px rgba(15,42,60,.12)}
+ .ns-side-brand{padding:0 3px 9px}
+ .ns-side-brand img{width:32px;height:32px}
+ .ns-side-brand>span{font-size:13px}
+ .ns-side-section-label{display:none}
+ .ns-side-nav{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ .ns-side-link{min-width:0;min-height:40px;justify-content:center;gap:5px;padding:0 5px;font-size:11px;white-space:nowrap}
+ .ns-side-mark{display:none}
+ .ns-nav-count{min-width:17px;padding:2px 4px;font-size:9px}
+ .ns-sidebar-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px;padding:8px 3px 0}
+ .ns-main-column{min-height:calc(100vh - 170px)}
+ .ns-topbar{height:62px;padding:0 20px}
+ .ns-content{padding:27px 20px 44px}
+ .ns-page-heading{align-items:flex-start}
+ .ns-heading-actions{justify-content:flex-start}
+ .ns-overview-grid{grid-template-columns:1fr}
+ .ns-settings-layout{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+ .ns-sidebar{padding:9px 10px 8px}
+ .ns-side-nav{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+ .ns-side-link{min-height:42px;font-size:10px;padding:0 2px}
+ .ns-sidebar-bottom{font-size:10px}
+ .ns-topbar{padding:0 14px}
+ .ns-topbar-kicker{font-size:6px}
+ .ns-topbar-title{font-size:14px}
+ .ns-topbar-right{gap:7px}
+ .ns-account{max-width:105px;font-size:8px}
+ .ns-env-badge{font-size:7px}
+ .ns-content{padding:23px 13px 34px}
+ .ns-page-heading{gap:14px;margin-bottom:20px}
+ .ns-page-heading h1{font-size:25px}
+ .ns-page-heading>div>p:last-child{font-size:11px}
+ .ns-heading-actions{width:100%;display:grid;grid-template-columns:1fr;gap:8px}
+ .ns-heading-actions>*{width:100%;justify-content:center}
+ .ns-metric-grid{gap:8px}
+ .ns-metric{min-height:116px;padding:15px}
+ .ns-metric strong{font-size:29px}
+ .ns-metric>span{font-size:10px}
+ .ns-metric small{font-size:9px}
+ .ns-panel-heading{padding:16px}
+ .ns-panel-heading h2{font-size:15px}
+ .ns-panel-caption{font-size:9px}
+ .ns-filter-bar{grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+ .ns-search-field{grid-column:span 2}
+ .ns-filter-bar label{font-size:10px}
+ .ns-filter-bar input,.ns-filter-bar select{height:42px;font-size:12px}
+ .ns-clear-button{grid-column:span 2}
+ .ns-table-toolbar{align-items:center;gap:8px;flex-wrap:wrap}
+ .ns-table-toolbar>.ns-text-button{margin-left:auto}
+ .ns-table-toolbar strong{font-size:12px}
+ .ns-table-toolbar select{height:36px}
+ .ns-audit-notice{flex-direction:column;gap:4px;padding:13px}
+ .ns-event-card{padding:17px}
+ .ns-event-card-foot{align-items:stretch;flex-direction:column}
+ .ns-event-card-foot .ns-outline-button{width:100%}
+ .ns-broadcast-layout{grid-template-columns:1fr}
+ .ns-detail-dialog{max-height:92vh}
+ .ns-detail-head{padding:18px}
+ .ns-detail-fields{grid-template-columns:1fr;padding:8px 18px}
+ .ns-detail-editor{padding:17px 18px 20px}
+ .ns-detail-actions{align-items:stretch;flex-direction:column}
+ .ns-detail-actions select,.ns-detail-actions .ns-primary-button{width:100%;margin-left:0}
+ .ns-footer{padding:14px;flex-direction:column;gap:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ns-admin *{scroll-behavior:auto!important;transition:none!important}
+}
