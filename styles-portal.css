@@ -517,3 +517,7 @@
  #view-overview .ns-breakdown-row{grid-template-columns:62px minmax(35px,1fr) 36px;gap:8px}
  #view-overview .ns-status-breakdown{padding:16px 15px}
 }
+
+/* Six operational KPIs: three columns on desktop, two on compact screens */
+#view-overview .ns-metric-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:800px){#view-overview .ns-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
