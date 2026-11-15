@@ -41,7 +41,8 @@ module.exports=async function handler(req,res){
    if(action==="createMember"){
     const name=clean(b.full_name,100),email=clean(b.email,254).toLowerCase();if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return send(res,400,{error:"氏名と有効なメールアドレスを入力してください。"});
     const member_number=clean(b.member_number,40)||("NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase());
-    const rows=await db("members",{method:"POST",headers:h,body:JSON.stringify({member_number,full_name:name,email,affiliation:clean(b.affiliation,160),grade:clean(b.grade,40),callsign:clean(b.callsign,20).toUpperCase(),radio_license_status:["held","not_held","unknown"].includes(b.radio_license_status)?b.radio_license_status:"unknown",radio_license_class:clean(b.radio_license_class,100),region:clean(b.region,100),joined_at:b.joined_at||new Date().toISOString(),membership_status:"active",email_opt_in:b.email_opt_in===true,admin_note:clean(b.admin_note,3000)})});
+    const licenseStatus=["held","not_held","unknown"].includes(b.radio_license_status)?b.radio_license_status:"unknown",licenseClass=clean(b.radio_license_class,100);if(licenseStatus==="held"&&!licenseClass)return send(res,400,{error:"免許の種類を入力してください。"});
+    const rows=await db("members",{method:"POST",headers:h,body:JSON.stringify({member_number,full_name:name,email,affiliation:clean(b.affiliation,160),grade:clean(b.grade,40),callsign:clean(b.callsign,20).toUpperCase(),radio_license_status:licenseStatus,radio_license_class:licenseStatus==="held"?licenseClass:"",region:clean(b.region,100),joined_at:b.joined_at||new Date().toISOString(),membership_status:"active",email_opt_in:b.email_opt_in===true,admin_note:clean(b.admin_note,3000)})});
     return send(res,201,{member:rows[0]});
    }
    if(action==="createActivity"){
