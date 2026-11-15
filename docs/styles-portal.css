@@ -521,7 +521,8 @@
 /* Six operational KPIs: three columns on desktop, two on compact screens */
 #view-overview .ns-metric-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:800px){#view-overview .ns-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-\n
+
+
 /* Member administration modules */
 .ns-side-section-label{padding:22px 18px 8px;color:#8494a1;font-size:10px;font-weight:700;letter-spacing:.14em}
 .ns-member-metrics{margin:0 0 22px}.ns-member-filters{grid-template-columns:minmax(220px,1.5fr) minmax(150px,.7fr) minmax(150px,.7fr)}
