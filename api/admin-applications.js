@@ -102,7 +102,32 @@ module.exports=async function handler(req,res){
    });
    auditWarning=!logRes.ok;
   }
-  return send(res,200,{application:updatedRows[0]||null,audit_warning:auditWarning});
+  let memberCreated=false,memberWarning=false;
+  if(changedStatus&&status==="approved"){
+   const app=updatedRows[0]||before;
+   const linked=await fetch(base()+"/rest/v1/members?source_application_id=eq."+encodeURIComponent(id)+"&select=id,membership_status",{headers});
+   const linkedRows=await linked.json().catch(()=>[]);
+   if(linked.ok&&linkedRows.length){
+    const current=linkedRows[0];
+    if(current.membership_status!=="active"){
+     await fetch(base()+"/rest/v1/members?id=eq."+encodeURIComponent(current.id),{method:"PATCH",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({membership_status:"active",joined_at:new Date().toISOString(),left_at:null,updated_at:new Date().toISOString()})});
+    }
+   }else if(linked.ok){
+    const memberNumber="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
+    const created=await fetch(base()+"/rest/v1/members",{method:"POST",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({source_application_id:id,member_number:memberNumber,full_name:app.full_name,email:app.email,affiliation:app.affiliation||"",grade:app.grade||"",callsign:app.callsign||"",region:app.region||"",joined_at:new Date().toISOString(),membership_status:"active",email_opt_in:false})});
+    memberCreated=created.ok;memberWarning=!created.ok;
+   }else memberWarning=true;
+  }
+  if(changedStatus&&status==="withdrawn"){
+   const linked=await fetch(base()+"/rest/v1/members?source_application_id=eq."+encodeURIComponent(id)+"&select=id,membership_status",{headers});
+   const linkedRows=await linked.json().catch(()=>[]);
+   if(linked.ok&&linkedRows.length){
+    const current=linkedRows[0],leftAt=new Date().toISOString();
+    await fetch(base()+"/rest/v1/members?id=eq."+encodeURIComponent(current.id),{method:"PATCH",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({membership_status:"withdrawn",left_at:leftAt,updated_at:leftAt})});
+    await fetch(base()+"/rest/v1/member_activities",{method:"POST",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({member_id:current.id,activity_type:"other",title:"入会申込の取下げに伴い退会処理",description:"管理画面で申込ステータスが取下げに変更されました。",happened_at:leftAt,created_by:user.id,created_by_email:user.email||""})});
+   }
+  }
+  return send(res,200,{application:updatedRows[0]||null,audit_warning:auditWarning,member_created:memberCreated,member_warning:memberWarning});
  }catch(error){
   console.error("Admin API request failed",error);
   return send(res,502,{error:"管理APIまたはデータベースへの接続に失敗しました。時間をおいて再度お試しください。"});
