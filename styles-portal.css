@@ -521,3 +521,32 @@
 /* Six operational KPIs: three columns on desktop, two on compact screens */
 #view-overview .ns-metric-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:800px){#view-overview .ns-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Member administration modules */
+.ns-side-section-label{padding:22px 18px 8px;color:#8494a1;font-size:10px;font-weight:700;letter-spacing:.14em}
+.ns-member-metrics{margin:0 0 22px}.ns-member-filters{grid-template-columns:minmax(220px,1.5fr) minmax(150px,.7fr) minmax(150px,.7fr)}
+.ns-member-table{min-width:900px}.ns-import-panel{margin-top:24px;padding:22px}
+.ns-import-panel .ns-recent-row{display:grid;grid-template-columns:minmax(130px,1fr) minmax(180px,2fr) auto;align-items:center;gap:14px}
+.ns-detail-dialog{max-height:90vh;overflow:auto}.ns-member-dialog{width:min(780px,calc(100vw - 32px));max-width:780px}
+.ns-member-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ns-member-edit-grid label,.ns-detail-editor>label,.ns-broadcast-compose>label{display:grid;gap:6px;color:#344b5d;font-size:12px;font-weight:650}
+.ns-member-edit-grid input,.ns-detail-editor input,.ns-detail-editor select,.ns-detail-editor textarea,.ns-broadcast-compose input,.ns-broadcast-compose textarea{width:100%;border:1px solid #d8e0e6;border-radius:5px;padding:10px 11px;font:inherit;color:#172d3d;background:#fff}
+.ns-optin-check{display:flex!important;grid-template-columns:auto 1fr;align-items:center;gap:9px!important;margin:14px 0}
+.ns-optin-check input{width:16px!important;height:16px}
+.ns-member-activity-panel{margin:20px 0 0;padding:18px}
+.ns-event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ns-event-card{padding:20px}.ns-event-card h2{font-size:20px;margin:8px 0}.ns-event-card>p{color:#627485;font-size:13px;line-height:1.7}
+.ns-event-card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:14px;border-top:1px solid #e8edf0}
+.ns-event-attendance{margin-top:24px;padding:20px}.ns-attendee-add{display:flex;align-items:end;gap:12px;margin-bottom:16px}.ns-attendee-add label{display:grid;gap:6px;flex:1;font-size:12px}
+.ns-attendee-add select{padding:10px;border:1px solid #d8e0e6;border-radius:5px;background:white}
+.ns-broadcast-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:18px;align-items:start}
+.ns-broadcast-compose{padding:22px;display:grid;gap:14px}.ns-broadcast-audience{padding:14px;background:#f4f7f9;border:1px solid #e2e8ed;display:grid;gap:5px}.ns-broadcast-audience span,.ns-broadcast-audience small{font-size:11px;color:#667987}.ns-broadcast-audience strong{font-size:14px}
+.ns-broadcast-row{padding:16px 0;border-bottom:1px solid #e7edf1;display:grid;gap:8px}.ns-broadcast-row strong{font-size:14px}.ns-broadcast-row small{font-size:11px;color:#71818e}.ns-broadcast-row p{font-size:12px;color:#526574;white-space:pre-wrap;max-height:100px;overflow:auto;margin:0}
+.ns-annual-chart{height:260px;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px;align-items:end;padding:16px 8px 0}
+.ns-annual-column{height:100%;display:grid;grid-template-rows:20px 1fr 22px;gap:6px;justify-items:center;min-width:0}.ns-annual-column strong{font-size:12px;color:#30485a}
+.ns-annual-track{width:min(32px,70%);height:100%;display:flex;align-items:end;background:#f0f3f5;border-radius:3px 3px 0 0;overflow:hidden}.ns-annual-track span{display:block;width:100%;background:#527c9b;border-radius:3px 3px 0 0}
+.ns-annual-column small{font-size:10px;color:#71818e;white-space:nowrap}
+.ns-annual-table-panel{margin-top:20px;padding:20px}
+@media(max-width:900px){.ns-broadcast-layout{grid-template-columns:1fr}.ns-event-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.ns-member-edit-grid{grid-template-columns:1fr}.ns-import-panel .ns-recent-row{grid-template-columns:1fr;gap:6px}.ns-attendee-add{align-items:stretch;flex-direction:column}.ns-annual-chart{gap:5px}.ns-annual-column small{font-size:9px;transform:rotate(-35deg);transform-origin:top center}}
