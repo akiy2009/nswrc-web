@@ -27,15 +27,15 @@ module.exports=async function handler(req,res){
  const clean=(v,n)=>typeof v==="string"?v.trim().slice(0,n):"";
  if(clean(b.website,200))return send(res,200,{application_id:"received"});
  const application_type=clean(b.application_type,20),full_name=clean(b.full_name,100),email=clean(b.email,254).toLowerCase(),affiliation=clean(b.affiliation,160),grade=clean(b.grade,40),callsign=clean(b.callsign,20).toUpperCase(),region=clean(b.region,100),message=clean(b.message,2000);
- const interests=Array.isArray(b.interests)?b.interests.filter(x=>typeof x==="string").slice(0,10).map(x=>clean(x,80)):[];
- if(!ALLOWED_TYPES.has(application_type)||!full_name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||b.privacy_consent!==true)return send(res,400,{error:"必須項目またはメールアドレス、同意内容を確認してください。"});
+ const interests=Array.isArray(b.interests)?b.interests.filter(x=>typeof x==="string").slice(0,10).map(x=>clean(x,80)):[],email_opt_in=b.email_opt_in===true;
+ if(!ALLOWED_TYPES.has(application_type)||!full_name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||b.privacy_consent!==true||b.eligibility_confirmation!==true)return send(res,400,{error:"必須項目またはメールアドレス、入会資格・個人情報の同意内容を確認してください。"});
  const key=serviceKey();
  if(!process.env.SUPABASE_URL||!key)return send(res,503,{error:"申込受付システムの設定が完了していません。現在は受付を停止しています。"});
  try{
   const response=await fetch(process.env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/membership_applications",{
    method:"POST",
    headers:{...serviceHeaders(),Prefer:"return=representation"},
-   body:JSON.stringify({application_type,full_name,email,affiliation,grade,callsign,region,interests,message,privacy_consent:true})
+   body:JSON.stringify({application_type,full_name,email,affiliation,grade,callsign,region,interests,message,privacy_consent:true,email_opt_in})
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok){
