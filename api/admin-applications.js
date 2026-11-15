@@ -50,7 +50,7 @@ module.exports=async function handler(req,res){
   const headers=serviceHeaders();
   if(req.method==="GET"){
    const [appsRes,auditRes]=await Promise.all([
-    fetch(base()+"/rest/v1/membership_applications?select=id,application_type,full_name,email,email_opt_in,affiliation,grade,callsign,region,interests,message,admin_note,status,created_at,updated_at&order=created_at.desc&limit=200",{headers}),
+    fetch(base()+"/rest/v1/membership_applications?select=id,application_type,full_name,email,email_opt_in,affiliation,grade,callsign,region,interests,message,admin_note,status,approval_notice_sent_at,created_at,updated_at&order=created_at.desc&limit=200",{headers}),
     fetch(base()+"/rest/v1/membership_admin_audit?select=id,application_id,actor_email,action,old_status,new_status,created_at&order=created_at.desc&limit=100",{headers})
    ]);
    const apps=await appsRes.json().catch(()=>[]);
@@ -65,17 +65,20 @@ module.exports=async function handler(req,res){
   const status=req.body?.status;
   const hasStatus=typeof status==="string";
   const hasNote=Object.prototype.hasOwnProperty.call(req.body||{},"admin_note");
+  const hasApprovalNotice=Object.prototype.hasOwnProperty.call(req.body||{},"approval_notice_sent_at");
   const note=hasNote?String(req.body.admin_note??"").trim():"";
-  if(!/^[0-9a-f-]{36}$/i.test(id)||(!hasStatus&&!hasNote)||(hasStatus&&!["pending","reviewing","approved","rejected","withdrawn"].includes(status))||(hasNote&&note.length>2000)){
+  const noticeAt=hasApprovalNotice?String(req.body.approval_notice_sent_at||""):"";
+  if(!/^[0-9a-f-]{36}$/i.test(id)||(!hasStatus&&!hasNote&&!hasApprovalNotice)||(hasStatus&&!["pending","reviewing","approved","rejected","withdrawn"].includes(status))||(hasNote&&note.length>2000)||(hasApprovalNotice&&(!Number.isFinite(Date.parse(noticeAt))))){
    return send(res,400,{error:"更新内容が不正です。"});
   }
-  const existingRes=await fetch(base()+"/rest/v1/membership_applications?id=eq."+encodeURIComponent(id)+"&select=id,status,admin_note",{headers});
+  const existingRes=await fetch(base()+"/rest/v1/membership_applications?id=eq."+encodeURIComponent(id)+"&select=id,status,admin_note,approval_notice_sent_at",{headers});
   const existingRows=await existingRes.json().catch(()=>[]);
   if(!existingRes.ok||!existingRows.length)return send(res,404,{error:"対象の申込が見つかりません。"});
   const before=existingRows[0],patch={updated_at:new Date().toISOString()};
   if(hasStatus)patch.status=status;
   if(hasNote)patch.admin_note=note;
-  if((hasStatus&&before.status===status)&&(!hasNote||(before.admin_note||"")===note)){
+  if(hasApprovalNotice){if(before.status!=="approved")return send(res,409,{error:"承認通知は承認済みの申込にのみ記録できます。"});patch.approval_notice_sent_at=noticeAt;}
+  if((!hasStatus||before.status===status)&&(!hasNote||(before.admin_note||"")===note)&&(!hasApprovalNotice||before.approval_notice_sent_at===noticeAt)){
    return send(res,200,{application:before,audit_warning:false});
   }
   const updateRes=await fetch(base()+"/rest/v1/membership_applications?id=eq."+encodeURIComponent(id),{
