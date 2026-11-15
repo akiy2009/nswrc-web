@@ -102,7 +102,8 @@ module.exports=async function handler(req,res){
   if(action==="member"){
    const patch={updated_at:new Date().toISOString()};
    for(const [k,max] of Object.entries({full_name:100,email:254,affiliation:160,grade:40,callsign:20,radio_license_class:100,region:100,admin_note:3000}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);
-   if(Object.prototype.hasOwnProperty.call(b,"email_opt_in"))patch.email_opt_in=b.email_opt_in===true;\n   if(Object.prototype.hasOwnProperty.call(b,"radio_license_status")){if(!["held","not_held","unknown"].includes(b.radio_license_status))return send(res,400,{error:"無線従事者免許の保有状況が不正です。"});patch.radio_license_status=b.radio_license_status;if(b.radio_license_status!=="held")patch.radio_license_class="";}
+   if(Object.prototype.hasOwnProperty.call(b,"email_opt_in"))patch.email_opt_in=b.email_opt_in===true;
+   if(Object.prototype.hasOwnProperty.call(b,"radio_license_status")){if(!["held","not_held","unknown"].includes(b.radio_license_status))return send(res,400,{error:"無線従事者免許の保有状況が不正です。"});patch.radio_license_status=b.radio_license_status;if(b.radio_license_status!=="held")patch.radio_license_class="";else if(!patch.radio_license_class)return send(res,400,{error:"免許の種類を入力してください。"});}
    if(Object.prototype.hasOwnProperty.call(b,"joined_at"))patch.joined_at=b.joined_at;
    if(Object.prototype.hasOwnProperty.call(b,"membership_status")){if(!["active","suspended","withdrawn"].includes(b.membership_status))return send(res,400,{error:"在籍状況が不正です。"});patch.membership_status=b.membership_status;patch.left_at=b.membership_status==="withdrawn"?(b.left_at||new Date().toISOString()):null;}
    if(patch.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email))return send(res,400,{error:"メールアドレスが不正です。"});
