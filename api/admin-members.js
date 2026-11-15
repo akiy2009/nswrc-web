@@ -70,7 +70,7 @@ module.exports=async function handler(req,res){
     let sent=0,failed=0;
     for(const m of recipients){
      let state="failed",messageId=null,errorText="";
-     try{const r=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({from:process.env.MAIL_FROM,to:[m.email],subject:drafts[0].subject,text:drafts[0].body})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||"メール送信に失敗しました。");state="sent";messageId=data.id||null;sent++;}catch(e){errorText=String(e.message||"送信失敗").slice(0,300);failed++;}
+     try{const emailText=drafts[0].body+"\\n\\n――――――――――\\nこのメールは、全国学生無線通信研究会からのご案内です。\\n配信停止を希望する場合は、公式サイトのお問い合わせフォームからご連絡ください。\\nhttps://akiy2009.github.io/nswrc-web/contact.html";const r=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({from:process.env.MAIL_FROM,to:[m.email],subject:drafts[0].subject,text:emailText})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||"メール送信に失敗しました。");state="sent";messageId=data.id||null;sent++;}catch(e){errorText=String(e.message||"送信失敗").slice(0,300);failed++;}
      await db("member_broadcast_recipients",{method:"POST",headers:h,body:JSON.stringify({broadcast_id:id,member_id:m.id,email:m.email,recipient_name:m.full_name,status:state,provider_message_id:messageId,error_message:errorText,sent_at:state==="sent"?new Date().toISOString():null})});
     }
     const status=failed===0?"sent":sent===0?"failed":"partial";
@@ -93,8 +93,11 @@ module.exports=async function handler(req,res){
    return send(res,200,{member:rows[0]});
   }
   if(action==="attendee"){
+   const before=await db("member_event_attendees?id=eq."+enc(id)+"&select=id,event_id,member_id,attendance_status&limit=1");if(!before.length)return send(res,404,{error:"参加登録が見つかりません。"});
    const patch={};if(["registered","attended","absent","cancelled"].includes(b.attendance_status))patch.attendance_status=b.attendance_status;if(Object.prototype.hasOwnProperty.call(b,"note"))patch.note=clean(b.note,1000);
-   const rows=await db("member_event_attendees?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});return send(res,200,{attendee:rows[0]||null});
+   const rows=await db("member_event_attendees?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});
+   if(patch.attendance_status==="attended"&&before[0].attendance_status!=="attended"){const ev=await db("member_events?id=eq."+enc(before[0].event_id)+"&select=title,location&limit=1");const title=ev[0]?.title||"研究会イベント";await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:before[0].member_id,event_id:before[0].event_id,activity_type:"event",title:"イベント参加："+title,description:(ev[0]?.location||"")+" にて出席を記録",happened_at:new Date().toISOString(),created_by:user.id,created_by_email:user.email||""})});}
+   return send(res,200,{attendee:rows[0]||null});
   }
   if(action==="event"){
    const patch={updated_at:new Date().toISOString()};for(const [k,max] of Object.entries({title:160,description:3000,location:200}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);
