@@ -672,3 +672,37 @@
 .application-page .application-name-kana{background:#f7f9fa}
 .application-page .application-name-note{color:#687b88;font-size:11px;line-height:1.7}
 @media(max-width:560px){.application-page .application-name-grid{grid-template-columns:1fr;gap:10px}.application-page .application-field-full-name{padding:14px}}
+
+/* MFA dialog: keep the verification form centered and controls consistently aligned. */
+# mfa-dialog{}
+#mfa-dialog{
+  width:min(460px,calc(100vw - 32px));
+  max-width:460px;
+  max-height:min(88vh,760px);
+  margin:auto;
+  overflow:auto;
+  border:1px solid #d5dfe5;
+  border-top:3px solid #17364f;
+  padding:0;
+  background:#fff;
+  box-sizing:border-box;
+}
+#mfa-dialog::backdrop{background:rgba(10,27,40,.58)}
+#mfa-dialog .ns-detail-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px}
+#mfa-dialog .ns-detail-editor{display:grid;gap:14px;padding:22px 24px 24px;border-top:0;background:#fff}
+#mfa-dialog #mfa-dialog-message{margin:0;color:#526777;font-size:13px;line-height:1.85}
+#mfa-dialog #mfa-enroll-area{display:grid;justify-items:center;gap:10px;padding:16px;border:1px solid #e1e8ed;background:#f7f9fa;text-align:center}
+#mfa-dialog #mfa-enroll-area[hidden]{display:none!important}
+#mfa-dialog #mfa-qr{width:min(220px,100%);height:auto;aspect-ratio:1;object-fit:contain;margin:0 auto!important;background:#fff}
+#mfa-dialog #mfa-enroll-area p{margin:4px 0 0;color:#617482;font-size:11px;line-height:1.7}
+#mfa-dialog #mfa-secret{display:block;width:100%;padding:10px 12px;background:#fff;border:1px solid #dce4e9;color:#23445a;font-size:12px;line-height:1.7;text-align:left;overflow-wrap:anywhere}
+#mfa-dialog .ns-detail-editor>label{display:grid;justify-content:stretch;gap:8px;color:#294a60;font-size:12px;font-weight:700}
+#mfa-dialog #mfa-code{display:block;width:100%;height:52px;box-sizing:border-box;margin:0;padding:0 14px;border:1px solid #cbd7df;border-radius:0;background:#fbfcfd;color:#17364f;font:inherit;font-size:22px;font-weight:700;letter-spacing:.35em;text-align:center;font-variant-numeric:tabular-nums}
+#mfa-dialog #mfa-code:focus{outline:2px solid #4b91c8;outline-offset:1px;background:#fff}
+#mfa-dialog #mfa-verify{width:100%;min-height:48px;margin:2px 0 0}
+#mfa-dialog #mfa-error{min-height:18px;margin:0;color:#a23c3c;font-size:11px;line-height:1.7}
+@media(max-width:520px){
+  #mfa-dialog{width:calc(100vw - 24px);max-height:90vh}
+  #mfa-dialog .ns-detail-head{padding:17px 18px}
+  #mfa-dialog .ns-detail-editor{padding:18px;gap:13px}
+}
