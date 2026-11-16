@@ -36,7 +36,6 @@ module.exports=async function handler(req,res){
  if(radio_license_status==="held"&&(!radio_license_number||!radio_license_class||(radio_license_class.startsWith("その他：")&&!radio_license_class.slice(4).trim())||(!radio_license_class.startsWith("その他：")&&!allowedLicenses.has(radio_license_class))))return send(res,400,{error:"無線従事者免許の種類を正しく選択してください。"});
  if(!ALLOWED_TYPES.has(application_type)||!full_name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||b.privacy_consent!==true||b.eligibility_confirmation!==true)return send(res,400,{error:"必須項目またはメールアドレス、入会資格・個人情報の同意内容を確認してください。"});
  let encryptedName,encryptedLicense;try{encryptedName=encrypt(full_name);encryptedLicense=radio_license_number?encrypt(radio_license_number):"";}catch(e){console.error("PII encryption unavailable",e.message);return send(res,503,{error:"個人情報の暗号化設定が完了していません。受付を停止しています。"});}
- let encryptedName,encryptedLicense;try{encryptedName=encrypt(full_name);encryptedLicense=radio_license_number?encrypt(radio_license_number):"";}catch(e){console.error("PII encryption unavailable",e.message);return send(res,503,{error:"個人情報の暗号化設定が完了していません。受付を停止しています。"});}
  const key=serviceKey();
  if(!process.env.SUPABASE_URL||!key)return send(res,503,{error:"申込受付システムの設定が完了していません。現在は受付を停止しています。"});
  try{
