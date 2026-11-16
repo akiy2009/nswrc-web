@@ -32,7 +32,7 @@ function ipDigest(req) {
   const ip = requestIp(req);
   return ip ? crypto.createHash("sha256").update(ip).digest("hex") : "";
 }
-async function authenticateAdmin(req) {
+async function authenticateAdmin(req, options = {}) {
   const token = bearer(req);
   if (!token || !base() || !process.env.SUPABASE_ANON_KEY || !serviceKey()) return null;
   const response = await fetch(base() + "/auth/v1/user", {
@@ -44,6 +44,7 @@ async function authenticateAdmin(req) {
 
   const claims = decodeClaims(token);
   if (!claims || claims.sub !== user.id || !claims.session_id) return null;
+  if (options.requireMfa !== false && claims.aal !== "aal2") return null;
   const authTime = Number(claims.auth_time);
   const now = Math.floor(Date.now() / 1000);
   // Absolute 12-hour admin session lifetime, independent of refresh-token renewal.
