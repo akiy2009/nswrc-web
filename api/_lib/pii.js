@@ -31,6 +31,8 @@ function encryptWith(value, key, prefix) {
 }
 function encrypt(value) {
   if (value === null || value === undefined || value === "") return "";
+  const text = String(value);
+  if (text.startsWith(V1_PREFIX) || text.startsWith(V2_PREFIX)) return text;
   const ring = keyRing();
   const packed = encryptWith(value, ring.keys[ring.activeId], "");
   const raw = Buffer.from(packed, "base64");
