@@ -1,4 +1,5 @@
 const {encrypt}=require("./_lib/pii");
+const {consumeRateLimit,ipDigest}=require("./_lib/admin-security");
 const ALLOWED_TYPES=new Set(["individual","school","organization"]);
 const MAX_BODY=12000;
 function send(res,status,body){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(body);}
@@ -27,6 +28,7 @@ module.exports=async function handler(req,res){
  let b;try{b=typeof req.body==="object"&&req.body?req.body:JSON.parse(raw);}catch{return send(res,400,{error:"入力内容を読み取れません。"});}
  const clean=(v,n)=>typeof v==="string"?v.trim().slice(0,n):"";
  if(clean(b.website,200))return send(res,200,{application_id:"received"});
+ try{const digest=ipDigest(req)||"unknown";if(!await consumeRateLimit("public-application:"+digest,3,3600))return send(res,429,{error:"申込の受付回数が上限に達しました。時間をおいて再試行してください。"});}catch(e){console.error("Application rate limit unavailable",e.message);return send(res,503,{error:"受付システムの安全確認に失敗しました。時間をおいて再試行してください。"});}
  const application_type=clean(b.application_type,20),full_name=clean(b.full_name,100),full_name_kana=clean(b.full_name_kana,100),email=clean(b.email,254).toLowerCase(),affiliation=clean(b.affiliation,160),grade=clean(b.grade,40),callsign=clean(b.callsign,20).toUpperCase(),region=clean(b.region,100),message=clean(b.message,2000);
  const interests=Array.isArray(b.interests)?b.interests.filter(x=>typeof x==="string").slice(0,10).map(x=>clean(x,80)):[],email_opt_in=b.email_opt_in===true;
  const radio_license_status=["held","not_held","unknown"].includes(b.radio_license_status)?b.radio_license_status:"unknown";
