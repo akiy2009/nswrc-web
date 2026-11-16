@@ -36,7 +36,7 @@ module.exports=async function handler(req,res){
     if(!rows.length||rows[0].status!=="approved")return send(res,409,{error:"承認済みの申込だけ会員登録できます。"});
     const a=decryptRow(rows[0]),existing=await db("members?source_application_id=eq."+enc(id)+"&select=id&limit=1");if(existing.length)return send(res,409,{error:"この申込はすでに会員登録されています。"});
     const member_number="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
-    const rows2=await db("members",{method:"POST",headers:h,body:JSON.stringify({source_application_id:id,member_number,full_name:encrypt(a.full_name),email:a.email,radio_license_number:a.radio_license_number?encrypt(a.radio_license_number):"",affiliation:a.affiliation,grade:a.grade,callsign:a.callsign,radio_license_status:a.radio_license_status||"unknown",radio_license_class:a.radio_license_class||"",region:a.region,email_opt_in:a.email_opt_in===true,joined_at:a.updated_at||a.created_at||new Date().toISOString(),membership_status:"active",email_opt_in:false})});
+    const rows2=await db("members",{method:"POST",headers:h,body:JSON.stringify({source_application_id:id,member_number,full_name:encrypt(a.full_name),email:a.email,radio_license_number:a.radio_license_number?encrypt(a.radio_license_number):"",affiliation:a.affiliation||"",grade:a.grade||"",callsign:a.callsign||"",radio_license_status:a.radio_license_status||"unknown",radio_license_class:a.radio_license_class||"",region:a.region||"",email_opt_in:false,joined_at:a.created_at||new Date().toISOString(),membership_status:"active"})});
     return send(res,201,{member:decryptRow(rows2[0])});
    }
    if(action==="createMember"){
