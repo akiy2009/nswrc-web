@@ -51,7 +51,7 @@ module.exports=async function handler(req,res){
   const headers=serviceHeaders();
   if(req.method==="GET"){
    const [appsRes,auditRes]=await Promise.all([
-    fetch(base()+"/rest/v1/membership_applications?select=id,application_type,full_name,email,email_opt_in,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,interests,message,admin_note,status,approval_notice_sent_at,created_at,updated_at&order=created_at.desc&limit=200",{headers}),
+    fetch(base()+"/rest/v1/membership_applications?select=id,application_type,full_name,full_name_kana,email,email_opt_in,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,interests,message,admin_note,status,approval_notice_sent_at,created_at,updated_at&order=created_at.desc&limit=200",{headers}),
     fetch(base()+"/rest/v1/membership_admin_audit?select=id,application_id,actor_email,action,old_status,new_status,created_at&order=created_at.desc&limit=100",{headers})
    ]);
    const apps=await appsRes.json().catch(()=>[]);
@@ -72,7 +72,7 @@ module.exports=async function handler(req,res){
   if(!/^[0-9a-f-]{36}$/i.test(id)||(!hasStatus&&!hasNote&&!hasApprovalNotice)||(hasStatus&&!["pending","reviewing","approved","rejected","withdrawn"].includes(status))||(hasNote&&note.length>2000)||(hasApprovalNotice&&(!Number.isFinite(Date.parse(noticeAt))))){
    return send(res,400,{error:"更新内容が不正です。"});
   }
-  const existingRes=await fetch(base()+"/rest/v1/membership_applications?id=eq."+encodeURIComponent(id)+"&select=id,status,admin_note,approval_notice_sent_at,full_name,email,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,email_opt_in,created_at",{headers});
+  const existingRes=await fetch(base()+"/rest/v1/membership_applications?id=eq."+encodeURIComponent(id)+"&select=id,status,admin_note,approval_notice_sent_at,full_name,full_name_kana,email,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,email_opt_in,created_at",{headers});
   const existingRows=await existingRes.json().catch(()=>[]);
   if(!existingRes.ok||!existingRows.length)return send(res,404,{error:"対象の申込が見つかりません。"});
   const before=decryptRow(existingRows[0]),patch={updated_at:new Date().toISOString()};
@@ -118,7 +118,7 @@ module.exports=async function handler(req,res){
     }
    }else if(linked.ok){
     const memberNumber="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
-    const created=await fetch(base()+"/rest/v1/members",{method:"POST",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({source_application_id:id,member_number:memberNumber,full_name:encrypt(app.full_name),email:app.email,radio_license_number:app.radio_license_number?encrypt(app.radio_license_number):"",affiliation:app.affiliation||"",grade:app.grade||"",callsign:app.callsign||"",radio_license_status:app.radio_license_status||"unknown",radio_license_class:app.radio_license_class||"",region:app.region||"",joined_at:new Date().toISOString(),membership_status:"active",email_opt_in:false})});
+    const created=await fetch(base()+"/rest/v1/members",{method:"POST",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({source_application_id:id,member_number:memberNumber,full_name:encrypt(app.full_name),full_name_kana:app.full_name_kana?encrypt(app.full_name_kana):"",email:app.email,radio_license_number:app.radio_license_number?encrypt(app.radio_license_number):"",affiliation:app.affiliation||"",grade:app.grade||"",callsign:app.callsign||"",radio_license_status:app.radio_license_status||"unknown",radio_license_class:app.radio_license_class||"",region:app.region||"",joined_at:new Date().toISOString(),membership_status:"active",email_opt_in:false})});
     memberCreated=created.ok;memberWarning=!created.ok;
    }else memberWarning=true;
   }
