@@ -1,10 +1,12 @@
 const {encrypt,decryptRow}=require("./_lib/pii");
+const {authenticateAdmin,consumeRateLimit,audit,json}=require("./_lib/admin-security");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
 const key=()=>process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY||"";
 const headers=()=>{const k=key(),h={apikey:k,"Content-Type":"application/json"};if(!k.startsWith("sb_secret_"))h.Authorization="Bearer "+k;return h;};
 const allowed=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
 function send(res,status,data){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(data);}
-async function admin(req){const raw=req.headers.authorization||"",token=raw.startsWith("Bearer ")?raw.slice(7):"";if(!token)return null;const r=await fetch(base()+"/auth/v1/user",{headers:{apikey:process.env.SUPABASE_ANON_KEY,Authorization:"Bearer "+token}});if(!r.ok)return null;const u=await r.json();return u.app_metadata?.role==="admin"?u:null;}
+function safeMember(row){if(!row)return row;const out=decryptRow(row,["full_name","full_name_kana"]);delete out.radio_license_number;return out;}
+function safeApplication(row){if(!row)return row;const out=decryptRow(row,["full_name","full_name_kana"]);delete out.radio_license_number;return out;}
 async function db(path,options={}){const r=await fetch(base()+"/rest/v1/"+path,{...options,headers:{...headers(),...(options.headers||{})}});const raw=await r.text();let data;try{data=raw?JSON.parse(raw):null;}catch{data={};}if(!r.ok){const e=new Error("データベース処理に失敗しました。");e.status=r.status;e.detail=data;throw e;}return data;}
 const enc=v=>encodeURIComponent(String(v));
 const validId=v=>/^[0-9a-f-]{36}$/i.test(String(v||""));
@@ -16,7 +18,7 @@ module.exports=async function handler(req,res){
  if(req.method==="OPTIONS")return res.status(204).end();if(!["GET","POST","PATCH"].includes(req.method)){res.setHeader("Allow","GET, POST, PATCH, OPTIONS");return send(res,405,{error:"Method not allowed"});}
  if(!base()||!key()||!process.env.SUPABASE_ANON_KEY)return send(res,503,{error:"管理APIのサーバー設定が完了していません。"});
  try{
-  const user=await admin(req);if(!user)return send(res,401,{error:"管理者としてログインしてください。"});
+  const auth=await authenticateAdmin(req);if(!auth)return send(res,401,{error:"管理者としてログインし直してください。"});const user=auth.user;if(!await consumeRateLimit("admin-members:"+user.id,120,60))return send(res,429,{error:"操作回数が上限に達しました。しばらくしてから再試行してください。"});
   const h={Prefer:"return=representation"};
   if(req.method==="GET"){
    const [members,apps,activities,events,attendees,broadcasts,allApps]=await Promise.all([
@@ -30,9 +32,10 @@ module.exports=async function handler(req,res){
    ]);
    const migratedMembers=await migrateLegacyPii("members",members),migratedApps=await migrateLegacyPii("membership_applications",allApps),appMap=new Map(migratedApps.map(a=>[a.id,a]));
    const safeApps=apps.map(a=>({...a,...(appMap.get(a.id)||{})}));
-   return send(res,200,{members:migratedMembers.map(m=>decryptRow(m)),approvedApplications:safeApps.map(a=>decryptRow(a)),activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
+   const auditOk=await audit(req,user,"members.list.view","members",null,{count:migratedMembers.length,approved_application_count:safeApps.length});if(!auditOk)return send(res,503,{error:"閲覧履歴を記録できないため、会員情報を表示できません。"});
+   return send(res,200,{members:migratedMembers.map(safeMember),approvedApplications:safeApps.map(safeApplication),activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
   }
-  const b=req.body||{},action=clean(b.action,40);
+  const b=req.body||{},action=clean(b.action,40);if(req.method!=="GET"){const resourceId=validId(b.id)?b.id:(validId(b.member_id)?b.member_id:null);const auditOk=await audit(req,user,req.method.toLowerCase()+"."+action,action==="member"?"member":"admin",resourceId,{phase:"requested"});if(!auditOk)return send(res,503,{error:"操作履歴を記録できないため、変更を受け付けられません。"});}
   if(req.method==="POST"){
    if(action==="createFromApplication"){
     const id=clean(b.application_id,64);if(!validId(id))return send(res,400,{error:"申込IDが不正です。"});
@@ -41,14 +44,14 @@ module.exports=async function handler(req,res){
     const a=decryptRow(rows[0]),existing=await db("members?source_application_id=eq."+enc(id)+"&select=id&limit=1");if(existing.length)return send(res,409,{error:"この申込はすでに会員登録されています。"});
     const member_number="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
     const rows2=await db("members",{method:"POST",headers:h,body:JSON.stringify({source_application_id:id,member_number,full_name:encrypt(a.full_name),full_name_kana:a.full_name_kana?encrypt(a.full_name_kana):"",email:a.email,radio_license_number:a.radio_license_number?encrypt(a.radio_license_number):"",affiliation:a.affiliation||"",grade:a.grade||"",callsign:a.callsign||"",radio_license_status:a.radio_license_status||"unknown",radio_license_class:a.radio_license_class||"",region:a.region||"",email_opt_in:false,joined_at:a.created_at||new Date().toISOString(),membership_status:"active"})});
-    return send(res,201,{member:decryptRow(rows2[0])});
+    return send(res,201,{member:safeMember(rows2[0])});
    }
    if(action==="createMember"){
     const name=clean(b.full_name,100),nameKana=clean(b.full_name_kana,100),email=clean(b.email,254).toLowerCase();if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return send(res,400,{error:"氏名と有効なメールアドレスを入力してください。"});
     const member_number=clean(b.member_number,40)||("NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase());
     const licenseStatus=["held","not_held","unknown"].includes(b.radio_license_status)?b.radio_license_status:"unknown",licenseClass=clean(b.radio_license_class,100),licenseNumber=clean(b.radio_license_number,40);if(licenseStatus==="held"&&(!licenseClass||!licenseNumber))return send(res,400,{error:"免許の種類と免許証番号を入力してください。"});
     const rows=await db("members",{method:"POST",headers:h,body:JSON.stringify({member_number,full_name:encrypt(name),full_name_kana:nameKana?encrypt(nameKana):"",email,radio_license_number:licenseStatus==="held"?encrypt(licenseNumber):"",affiliation:clean(b.affiliation,160),grade:clean(b.grade,40),callsign:clean(b.callsign,20).toUpperCase(),radio_license_status:licenseStatus,radio_license_class:licenseStatus==="held"?licenseClass:"",region:clean(b.region,100),joined_at:b.joined_at||new Date().toISOString(),membership_status:"active",email_opt_in:b.email_opt_in===true,admin_note:clean(b.admin_note,3000)})});
-    return send(res,201,{member:decryptRow(rows[0])});
+    return send(res,201,{member:safeMember(rows[0])});
    }
    if(action==="createActivity"){
     if(!validId(b.member_id)||!clean(b.title,160))return send(res,400,{error:"会員と活動名を指定してください。"});
@@ -129,7 +132,7 @@ module.exports=async function handler(req,res){
    if(Object.prototype.hasOwnProperty.call(patch,"radio_license_number")&&patch.radio_license_number)patch.radio_license_number=encrypt(patch.radio_license_number);
    const rows=await db("members?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});if(!rows.length)return send(res,404,{error:"会員が見つかりません。"});
    if(patch.membership_status&&patch.membership_status!==beforeRows[0].membership_status){const label={active:"在籍",suspended:"休会・停止",withdrawn:"退会"};await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:id,activity_type:"other",title:"在籍状況を"+label[beforeRows[0].membership_status]+"から"+label[patch.membership_status]+"に変更",description:"管理者 "+(user.email||"")+" が在籍状況を更新しました。",happened_at:new Date().toISOString(),created_by:user.id,created_by_email:user.email||""})});}
-   return send(res,200,{member:decryptRow(rows[0])});
+   return send(res,200,{member:safeMember(rows[0])});
   }
   if(action==="attendee"){
    const before=await db("member_event_attendees?id=eq."+enc(id)+"&select=id,event_id,member_id,attendance_status&limit=1");if(!before.length)return send(res,404,{error:"参加登録が見つかりません。"});
