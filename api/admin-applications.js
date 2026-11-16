@@ -108,7 +108,7 @@ module.exports=async function handler(req,res){
   }
   let memberCreated=false,memberWarning=false;
   if(changedStatus&&status==="approved"){
-   const app=updatedRows[0]||before;
+   const app=decryptRow(updatedRows[0]||before);
    const linked=await fetch(base()+"/rest/v1/members?source_application_id=eq."+encodeURIComponent(id)+"&select=id,membership_status",{headers});
    const linkedRows=await linked.json().catch(()=>[]);
    if(linked.ok&&linkedRows.length){
