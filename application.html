@@ -9,7 +9,7 @@
 <form class="application-card" id="membership-form">
 <input type="hidden" name="application_type" value="individual">
 <section class="application-section"><h2>01　申込者情報</h2><div class="application-grid">
-<div class="application-field"><label for="full_name">氏名<span class="application-required">必須</span></label><input id="full_name" name="full_name" autocomplete="name" maxlength="100" required></div>
+<div class="application-field application-field-full-name"><label for="full_name">氏名（フルネーム）<span class="application-required">必須</span></label><input id="full_name" name="full_name" type="text" autocomplete="name" placeholder="例：山田 太郎" aria-describedby="full-name-help" maxlength="100" required><small id="full-name-help">姓と名の両方を省略せずに入力してください。会員名簿・入会承認などの正式な登録情報として使用します。姓と名の間にはスペースを入れても構いません。</small></div>
 <div class="application-field"><label for="email">メールアドレス<span class="application-required">必須</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required></div>
 <div class="application-field"><label for="email_confirm">メールアドレス（確認用）<span class="application-required">必須</span></label><input id="email_confirm" name="email_confirm" type="email" inputmode="email" autocomplete="off" maxlength="254" required><small>入力間違い防止のため、同じメールアドレスをもう一度入力してください。</small></div>
 <div class="application-field"><label for="affiliation">学校名・所属</label><input id="affiliation" name="affiliation" autocomplete="organization" maxlength="160"><small>学校・クラブ・団体に所属している場合に入力してください。団体自体が構成員となるものではありません。</small></div>
