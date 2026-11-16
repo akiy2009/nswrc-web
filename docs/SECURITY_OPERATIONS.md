@@ -104,25 +104,60 @@ anon / authenticated には公開スキーマの利用権限・対象テーブ�
 
 ## 7. バックアップと復元
 
-### 現在の確認状況
+### 現在の契約プラン
 
-Supabaseプロジェクトの契約プラン・自動バックアップ設定・保存期間は、API情報だけでは確認できていません。Supabase Dashboardの **Database → Backups** を確認してください。
+2026-11-16時点で接続情報から確認したプラン:
 
-Supabase公式ドキュメントによると、Freeプランには自動バックアップがなく、Proは日次7日、Teamは日次14日、Enterpriseは最大30日保存です。PITRは有料アドオンです。詳細は[Supabase Database Backups](https://supabase.com/docs/guides/platform/backups)を参照してください。
+- Supabase: **Free ($0/月)**
+- Vercel: **Hobby ($0/月)**
+- Supabaseプロジェクト: ACTIVE_HEALTHY
+
+Supabase Freeには自動バックアップがありません。Proは日次7日、Teamは日次14日、Enterpriseは最大30日保存です。PITRは有料アドオンです。詳細は[Supabase Database Backups](https://supabase.com/docs/guides/platform/backups)を参照してください。
+
+### 無料枠を使った代替バックアップ
+
+GitHub Actionsで毎週日曜日12:00（日本時間）に、Supabaseのpublicスキーマとデータをダンプし、AES-256で暗号化したアーカイブを7日間保存するワークフローを追加しました。
+
+ファイル: `.github/workflows/weekly-db-backup.yml`
+
+**有効化に必要な設定（GitHub側）**
+
+リポジトリの Settings → Secrets and variables → Actions → New repository secret から、次の2つを登録してください。
+
+1. `SUPABASE_DB_URL`: Supabase DashboardのDatabase接続文字列。可能ならSession poolerの接続URIを使用してください。DBパスワードを含むため、公開Issueやコードに書かないでください。
+2. `BACKUP_ENCRYPTION_PASSPHRASE`: 十分に長いランダムなバックアップ専用パスフレーズ。暗号化鍵とは別の安全な場所にも保管してください。
+
+登録後、Actions → Weekly encrypted NSWRC database backup → Run workflow で初回実行し、成功と暗号化Artifactの作成を確認してください。Secretsはこの環境から登録できないため、上記2つが登録されるまではワークフローは実行に失敗します。ワークフローの追加だけでバックアップが開始済みになったわけではありません。
+
+GitHub Freeの標準Actionsには月2,000分・Artifact等の共有ストレージ500MBが含まれます。週1回・7日保存の運用はこの枠内を想定していますが、他のActions/Packages使用量とバックアップサイズ次第で上限に達する可能性があります。無料枠を超えた場合に課金が発生しないよう、GitHubのActions予算・利用上限も確認してください。詳細は[GitHub Actionsの無料枠](https://docs.github.com/ja/billing/concepts/product-billing/github-actions)を参照してください。
+
+**バックアップの対象外・制約**
+
+- このワークフローはSupabaseのpublicスキーマの構造とデータを対象にします。
+- Supabase CLIの標準ダンプはSupabase管理のauth / storageスキーマやStorage内ファイル本体を含みません。管理者Authユーザー、認証要素、Storageファイルは別途復旧手順が必要です。
+- Artifactは7日で自動削除されるため、長期保存や30日保存の代替ではありません。
+- 公開リポジトリのActions Artifactはリポジトリ閲覧者が取得できる可能性があるため、暗号化済みファイルのみアップロードします。パスフレーズはリポジトリに保存しないでください。
+- バックアップの取得成功だけでは復元可能性を保証しません。別環境での復元テストが必要です。
+
+### 復元の基本方針
+
+1. GitHub ActionsのArtifactから暗号化ファイルを取得します。
+2. 安全な端末で専用パスフレーズを使って復号します。
+3. アーカイブ内のschema.sqlとdata.sqlを確認し、まず別のSupabaseプロジェクトへ復元します。
+4. RLS・GRANT・ポリシー・トリガー・関数・暗号化鍵設定を確認し、会員件数・申込件数・代表レコード・暗号化データの復号を検証します。
+5. AuthユーザーとStorageファイルは、別途再作成・復元が必要です。
+6. 本番へ直接復元する前に、実施者・日時・復元ポイント・影響範囲を記録してください。
 
 ### 推奨運用
 
-- 本番DBの論理バックアップを少なくとも毎日取得し、暗号化した状態でSupabaseプロジェクトとは別の保管先に保存します。
-- 保存期間はまず30日を推奨値とし、会の個人情報取扱方針に合わせて正式決定してください。
-- バックアップには個人情報が含まれるため、保管先のアクセス権を限定し、暗号化鍵とは別管理にします。
-- スキーマ変更・大規模な個人情報更新・鍵ローテーションの前にもバックアップを取得します。
+- バックアップArtifactは7日保存の短期復旧用とし、重要な変更や鍵ローテーション前には手動バックアップも取得します。
+- 保存先の追加や長期保存を行う場合も、暗号化した状態でアクセス権を限定します。
 - 少なくとも四半期に一度、別プロジェクトまたは隔離環境へ復元し、会員件数・申込件数・代表データ・暗号化データの復号を確認します。
-- 本番へ直接復元する前に、必ず別環境で復元テストを行います。復元は本番データを置き換える可能性があるため、実施者・日時・復元ポイント・影響範囲を記録してください。
-- Storageを使用する場合、DBバックアップだけではStorage内のファイル本体を復元できない点に注意してください。
+- Storageを使用する場合、DBバックアップだけではファイル本体を復元できない点に注意してください。
 
 ## 8. 残っている運用確認
 
-- Supabase Authの「Leaked Password Protection」が無効というSecurity Advisor警告が残っています。DashboardのAuthentication / Security設定で有効化してください（現時点で接続ツールから変更できていません）。
+- Supabase Freeでは「Leaked Password Protection」は提供対象外です。Pro以上の機能なので有効化しません。無料運用では管理者に12文字以上の固有パスワードとTOTP MFAを必須にし、漏えいの疑いがあれば即時変更・セッション失効する運用で補います。漏えい済みパスワードとの自動照合は行いません。
 - Supabaseプロジェクトのプランと自動バックアップの有無・保存期間は未確認です。
 - バックアップの外部保管先、実際の定期取得、復元テストはまだ構築・実施していません。
 - 監査ログの保存期間は未決定です。保存期間・閲覧権限・削除手順を運営規程として決めてください。
