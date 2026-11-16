@@ -1,3 +1,4 @@
+const {consumeRateLimit,ipDigest}=require("./_lib/admin-security");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
 const allowedOrigins=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
 function send(res,status,data){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(data);}
@@ -16,6 +17,8 @@ module.exports=async function handler(req,res){
  if(req.method!=="POST"){res.setHeader("Allow","POST, OPTIONS");return send(res,405,{error:"Method not allowed"});}
  if(!base()||!key())return send(res,503,{error:"お問い合わせ受付のサーバー設定が完了していません。"});
  try{
+  const digest=ipDigest(req)||"unknown";
+  if(!await consumeRateLimit("public-contact:"+digest,5,3600))return send(res,429,{error:"お問い合わせの受付回数が上限に達しました。時間をおいて再試行してください。"});
   const b=req.body||{};
   if(b.website)return send(res,200,{ok:true});
   const allowed=["研究会について","参加・入会について","イベント・共同企画について","ニュース掲載依頼","その他"];
