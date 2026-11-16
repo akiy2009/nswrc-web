@@ -9,6 +9,7 @@ async function db(path,options={}){const r=await fetch(base()+"/rest/v1/"+path,{
 const enc=v=>encodeURIComponent(String(v));
 const validId=v=>/^[0-9a-f-]{36}$/i.test(String(v||""));
 const clean=(v,n)=>typeof v==="string"?v.trim().slice(0,n):"";
+async function migrateLegacyPii(table,rows){const result=[];for(const row of rows||[]){const patch={};if(row.full_name&&!String(row.full_name).startsWith("enc:v1:"))patch.full_name=encrypt(row.full_name);if(row.radio_license_number&&!String(row.radio_license_number).startsWith("enc:v1:"))patch.radio_license_number=encrypt(row.radio_license_number);if(Object.keys(patch).length)await db(table+"?id=eq."+enc(row.id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(patch)});result.push({...row,...patch});}return result;}
 module.exports=async function handler(req,res){
  const origin=req.headers.origin;if(origin&&!allowed().includes(origin.replace(/\/$/,"")))return send(res,403,{error:"この送信元からのアクセスは許可されていません。"});
  if(origin)res.setHeader("Access-Control-Allow-Origin",origin);res.setHeader("Vary","Origin");res.setHeader("Access-Control-Allow-Methods","GET, POST, PATCH, OPTIONS");res.setHeader("Access-Control-Allow-Headers","Authorization, Content-Type");
@@ -18,15 +19,18 @@ module.exports=async function handler(req,res){
   const user=await admin(req);if(!user)return send(res,401,{error:"管理者としてログインしてください。"});
   const h={Prefer:"return=representation"};
   if(req.method==="GET"){
-   const [members,apps,activities,events,attendees,broadcasts]=await Promise.all([
+   const [members,apps,activities,events,attendees,broadcasts,allApps]=await Promise.all([
     db("members?select=*&order=joined_at.desc&limit=2000"),
+    db("membership_applications?select=id,full_name,radio_license_number&limit=2000"),
     db("membership_applications?select=id,full_name,email,email_opt_in,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,created_at,status&status=eq.approved&order=created_at.asc&limit=500"),
     db("member_activities?select=*&order=happened_at.desc&limit=2000"),
     db("member_events?select=*&order=starts_at.desc&limit=500"),
     db("member_event_attendees?select=*&limit=5000"),
     db("member_broadcasts?select=*&order=created_at.desc&limit=200")
    ]);
-   return send(res,200,{members:Array.isArray(members)?members.map(m=>decryptRow(m)):members,approvedApplications:Array.isArray(apps)?apps.map(a=>decryptRow(a)):apps,activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
+   const migratedMembers=await migrateLegacyPii("members",members),migratedApps=await migrateLegacyPii("membership_applications",allApps),appMap=new Map(migratedApps.map(a=>[a.id,a]));
+   const safeApps=apps.map(a=>({...a,...(appMap.get(a.id)||{})}));
+   return send(res,200,{members:migratedMembers.map(m=>decryptRow(m)),approvedApplications:safeApps.map(a=>decryptRow(a)),activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
   }
   const b=req.body||{},action=clean(b.action,40);
   if(req.method==="POST"){
@@ -103,13 +107,26 @@ module.exports=async function handler(req,res){
   const id=clean(b.id,64);if(!validId(id))return send(res,400,{error:"更新対象IDが不正です。"});
   if(action==="member"){
    const patch={updated_at:new Date().toISOString()};
-   for(const [k,max] of Object.entries({full_name:100,email:254,radio_license_number:40,affiliation:160,grade:40,callsign:20,radio_license_class:100,region:100,admin_note:3000}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);if(patch.full_name)patch.full_name=encrypt(patch.full_name);if(patch.radio_license_number)patch.radio_license_number=encrypt(patch.radio_license_number);
+   for(const [k,max] of Object.entries({full_name:100,email:254,radio_license_number:40,affiliation:160,grade:40,callsign:20,radio_license_class:100,region:100,admin_note:3000}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);
    if(Object.prototype.hasOwnProperty.call(b,"email_opt_in"))patch.email_opt_in=b.email_opt_in===true;
-   if(Object.prototype.hasOwnProperty.call(b,"radio_license_status")){if(!["held","not_held","unknown"].includes(b.radio_license_status))return send(res,400,{error:"無線従事者免許の保有状況が不正です。"});patch.radio_license_status=b.radio_license_status;if(b.radio_license_status!=="held")patch.radio_license_class="";else if(!patch.radio_license_class)return send(res,400,{error:"免許の種類を入力してください。"});else if(!patch.radio_license_number&&!Object.prototype.hasOwnProperty.call(b,"radio_license_number"))return send(res,400,{error:"免許証番号を入力してください。"});else if(Object.prototype.hasOwnProperty.call(b,"radio_license_number")&&!clean(b.radio_license_number,40))return send(res,400,{error:"免許証番号を入力してください。"});}
+   if(Object.prototype.hasOwnProperty.call(b,"radio_license_status")&&!["held","not_held","unknown"].includes(b.radio_license_status))return send(res,400,{error:"無線従事者免許の保有状況が不正です。"});
+   if(Object.prototype.hasOwnProperty.call(b,"radio_license_status"))patch.radio_license_status=b.radio_license_status;
    if(Object.prototype.hasOwnProperty.call(b,"joined_at"))patch.joined_at=b.joined_at;
    if(Object.prototype.hasOwnProperty.call(b,"membership_status")){if(!["active","suspended","withdrawn"].includes(b.membership_status))return send(res,400,{error:"在籍状況が不正です。"});patch.membership_status=b.membership_status;patch.left_at=b.membership_status==="withdrawn"?(b.left_at||new Date().toISOString()):null;}
    if(patch.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email))return send(res,400,{error:"メールアドレスが不正です。"});
-   const beforeRows=await db("members?id=eq."+enc(id)+"&select=id,membership_status&limit=1");if(!beforeRows.length)return send(res,404,{error:"会員が見つかりません。"});
+   const beforeRows=await db("members?id=eq."+enc(id)+"&select=id,membership_status,radio_license_status,radio_license_class,radio_license_number&limit=1");if(!beforeRows.length)return send(res,404,{error:"会員が見つかりません。"});
+   const before=decryptRow(beforeRows[0]),effectiveStatus=patch.radio_license_status||before.radio_license_status||"unknown";
+   if(effectiveStatus==="held"){
+    const effectiveClass=Object.prototype.hasOwnProperty.call(patch,"radio_license_class")?patch.radio_license_class:before.radio_license_class;
+    const effectiveNumber=Object.prototype.hasOwnProperty.call(patch,"radio_license_number")?patch.radio_license_number:before.radio_license_number;
+    if(!effectiveClass)return send(res,400,{error:"免許の種類を入力してください。"});
+    if(!effectiveNumber)return send(res,400,{error:"免許証番号を入力してください。"});
+   }else{
+    patch.radio_license_class="";
+    patch.radio_license_number="";
+   }
+   if(patch.full_name)patch.full_name=encrypt(patch.full_name);
+   if(Object.prototype.hasOwnProperty.call(patch,"radio_license_number")&&patch.radio_license_number)patch.radio_license_number=encrypt(patch.radio_license_number);
    const rows=await db("members?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});if(!rows.length)return send(res,404,{error:"会員が見つかりません。"});
    if(patch.membership_status&&patch.membership_status!==beforeRows[0].membership_status){const label={active:"在籍",suspended:"休会・停止",withdrawn:"退会"};await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:id,activity_type:"other",title:"在籍状況を"+label[beforeRows[0].membership_status]+"から"+label[patch.membership_status]+"に変更",description:"管理者 "+(user.email||"")+" が在籍状況を更新しました。",happened_at:new Date().toISOString(),created_by:user.id,created_by_email:user.email||""})});}
    return send(res,200,{member:decryptRow(rows[0])});
