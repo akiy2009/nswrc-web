@@ -336,10 +336,10 @@ async function ensureRecentMfa(){
   if(verified.error)throw new Error("認証コードを確認できませんでした。認証アプリの時刻設定を確認して、もう一度お試しください。");
   // Use the session returned by MFA verify itself. getSession() can still expose
   // the pre-challenge snapshot while the auth-state event is being processed.
-  const verifiedSession=verified.data?.session;
-  if(!verifiedSession?.access_token)throw new Error("追加認証は成功しましたが、新しい管理者セッションを取得できません。もう一度ログインしてください。");
-  accessToken=verifiedSession.access_token;
-  currentUser=verifiedSession.user||currentUser;
+  const verifiedData=verified.data;
+  if(!verifiedData?.access_token)throw new Error("追加認証は成功しましたが、新しい管理者トークンを取得できません。もう一度ログインしてください。");
+  accessToken=verifiedData.access_token;
+  currentUser=verifiedData.user||currentUser;
   const updated=decodeAdminClaims();
   if(updated?.aal!=="aal2"||!updated?.session_id||!updated?.sub)throw new Error("追加認証後の認証情報が不完全です。ログアウトして再度ログインしてください。");
   const verifiedAuthTime=Number(updated.auth_time);
