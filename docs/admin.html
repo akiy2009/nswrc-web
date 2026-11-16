@@ -186,7 +186,7 @@ const demoActivities=[
 const $=id=>document.getElementById(id);
 const STATUS={pending:"未確認",reviewing:"審査中",approved:"承認済み",rejected:"不承認",withdrawn:"取下げ"};
 const TYPES={individual:"個人",school:"学校・クラブ",organization:"その他団体"};
-if(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+if(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
 function notify(message){$("admin-status").textContent=message;$("admin-status").classList.add("is-visible");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("admin-status").classList.remove("is-visible"),4200);}
 function setView(name){document.querySelectorAll(".ns-view").forEach(v=>v.hidden=v.id!=="view-"+name);document.querySelectorAll(".ns-side-link").forEach(b=>b.classList.toggle("is-active",b.dataset.view===name));$("topbar-title").textContent=({overview:"概要",applications:"入会申込管理",contacts:"お問い合わせ管理",members:"会員管理",events:"イベント・参加者管理",broadcasts:"一斉連絡",annual:"年度別会員推移",activity:"操作履歴",settings:"環境設定"})[name]||"概要";if(name==="overview")renderOverview();if(name==="applications")renderApplications();if(name==="contacts"){renderContacts();if(!demoMode)loadContacts().catch(e=>notify(e.message));}if(name==="members")renderMembers();if(name==="events")renderEvents();if(name==="broadcasts")renderBroadcasts();if(name==="annual")renderAnnual();if(name==="activity")renderActivities();}
 document.querySelectorAll(".ns-side-link").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
@@ -351,5 +351,36 @@ async function enterApp(isDemo){demoMode=isDemo;$("login-screen").hidden=true;$(
 $("demo-login-button").addEventListener("click",()=>{currentUser={email:"demo@example.jp"};enterApp(true);});
 $("logout").addEventListener("click",async()=>{if(refreshTimer)clearInterval(refreshTimer);if(!demoMode)await supabaseClient?.auth.signOut();demoMode=false;accessToken=null;currentUser=null;applications=[];activities=[];contacts=[];$("app").hidden=true;$("login-screen").hidden=false;$("password").value="";notify("ログアウトしました。");});
 loadSettings();
+
+// Restore the Supabase session saved by the Auth SDK on this browser.
+// The SDK persists the refresh token and renews access tokens automatically.
+if(supabaseClient){
+  supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(session){
+      accessToken=session.access_token;
+      currentUser=session.user;
+    }else if(event==="SIGNED_OUT"){
+      accessToken=null;
+      currentUser=null;
+    }
+  });
+  (async()=>{
+    try{
+      const {data,error}=await supabaseClient.auth.getSession();
+      if(error)throw error;
+      if(data.session){
+        accessToken=data.session.access_token;
+        currentUser=data.session.user;
+        await enterApp(false);
+      }
+    }catch(error){
+      console.warn("Saved admin session could not be restored.",error);
+      await supabaseClient.auth.signOut().catch(()=>{});
+      accessToken=null;
+      currentUser=null;
+      $("login-error").textContent="保存されたログイン状態を確認できませんでした。もう一度ログインしてください。";
+    }
+  })();
+}
 </script>
 </body></html>
