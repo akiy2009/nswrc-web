@@ -49,14 +49,14 @@
 
 既存データの復号に必要な旧鍵を保持したまま、新しい鍵を追加します。
 
-- NSWRC_PII_ENCRYPTION_KEYS: JSON形式の鍵IDと64桁hex鍵の対応表
+- NSWRC_PII_ENCRYPTION_KEYS: JSON形式の鍵IDと64桁hex鍵の対応表（enc:v2用）
 - NSWRC_PII_ACTIVE_KEY_ID: 新規暗号化に使用する鍵ID
-- NSWRC_PII_ENCRYPTION_KEYまたはPII_ENCRYPTION_KEY: 旧enc:v1データを復号するための移行用旧鍵（移行後も検証が終わるまでは削除しない）
+- NSWRC_PII_ENCRYPTION_KEYまたはPII_ENCRYPTION_KEY: 旧enc:v1データを復号するための移行用旧鍵（移行後も検証が終わるまでは削除しない）。旧鍵は鍵リングへ複製せず、この環境変数に残しても復号できます。
 
 例（値は説明用のプレースホルダーであり、実際の鍵ではありません）:
 
 ~~~json
-{"legacy":"<旧32-byte hex鍵>","2026-11":"<新32-byte hex鍵>"}
+{"nswrc-2026-11":"<新32-byte hex鍵>"}
 ~~~
 
 新しい鍵は安全な端末で暗号学的乱数から生成し、VercelのProduction環境変数へ登録してください。鍵の実値をこの文書やリポジトリに記載してはいけません。
@@ -65,8 +65,8 @@
 
 1. 現行の旧鍵を安全な保管場所で確認し、復号可能な状態を維持します。
 2. 新しい32-byte鍵を生成します。
-3. NSWRC_PII_ENCRYPTION_KEYSへ旧鍵と新鍵の両方を登録します。
-4. NSWRC_PII_ACTIVE_KEY_IDを新しい鍵IDに設定し、Vercelへ再デプロイします。
+3. NSWRC_PII_ENCRYPTION_KEYSへ新しい鍵IDと新鍵を登録します。旧enc:v1用の鍵は、既存のNSWRC_PII_ENCRYPTION_KEY / PII_ENCRYPTION_KEYに残します。
+4. NSWRC_PII_ACTIVE_KEY_IDを新しい鍵ID（現在設定済み: nswrc-2026-11）に設定し、Vercelへ再デプロイします。
 5. 管理画面の「環境設定」→「暗号化鍵のローテーションを実行」を開き、追加認証を行って実行します。
 6. 会員・申込の両テーブルで処理が完了したことを確認します。
 7. 別途、DB内に旧鍵IDのenc:v2データやenc:v1データが残っていないことを確認します。
