@@ -9,13 +9,17 @@ function safeMember(row){if(!row)return row;const out=decryptRow(row,["full_name
 function safeApplication(row){if(!row)return row;const out=decryptRow(row,["full_name","full_name_kana"]);delete out.radio_license_number;return out;}
 async function db(path,options={}){const r=await fetch(base()+"/rest/v1/"+path,{...options,headers:{...headers(),...(options.headers||{})}});const raw=await r.text();let data;try{data=raw?JSON.parse(raw):null;}catch{data={};}if(!r.ok){const e=new Error("データベース処理に失敗しました。");e.status=r.status;e.detail=data;throw e;}return data;}
 const enc=v=>encodeURIComponent(String(v));
-const validId=v=>/^[0-9a-f-]{36}$/i.test(String(v||""));
+const validId=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||""));
 const clean=(v,n)=>typeof v==="string"?v.trim().slice(0,n):"";
+const validEmail=v=>typeof v==="string"&&v.length<=254&&!Array.from(v).some(ch=>ch.charCodeAt(0)<=32)&&v.includes("@")&&v.lastIndexOf(".")>v.indexOf("@")+1;
+const validDate=v=>Number.isFinite(Date.parse(String(v||"")));
+const validCallsign=v=>!v||/^[A-Z0-9/]{3,20}$/.test(String(v));
+const validLicenseClass=v=>["第一級アマチュア無線技士","第二級アマチュア無線技士","第三級アマチュア無線技士","第四級アマチュア無線技士"].includes(v)||(/^その他：/.test(String(v))&&String(v).slice(4).trim().length>0);
 async function migrateLegacyPii(table,rows){const result=[];for(const row of rows||[]){const patch={};if(row.full_name&&!String(row.full_name).startsWith("enc:v1:")&&!String(row.full_name).startsWith("enc:v2:"))patch.full_name=encrypt(row.full_name);if(row.full_name_kana&&!String(row.full_name_kana).startsWith("enc:v1:")&&!String(row.full_name_kana).startsWith("enc:v2:"))patch.full_name_kana=encrypt(row.full_name_kana);if(row.radio_license_number&&!String(row.radio_license_number).startsWith("enc:v1:")&&!String(row.radio_license_number).startsWith("enc:v2:"))patch.radio_license_number=encrypt(row.radio_license_number);if(Object.keys(patch).length)await db(table+"?id=eq."+enc(row.id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(patch)});result.push({...row,...patch});}return result;}
 module.exports=async function handler(req,res){
  const origin=req.headers.origin;if(origin&&!allowed().includes(origin.replace(/\/$/,"")))return send(res,403,{error:"この送信元からのアクセスは許可されていません。"});
  if(origin)res.setHeader("Access-Control-Allow-Origin",origin);res.setHeader("Vary","Origin");res.setHeader("Access-Control-Allow-Methods","GET, POST, PATCH, OPTIONS");res.setHeader("Access-Control-Allow-Headers","Authorization, Content-Type");
- if(req.method==="OPTIONS")return res.status(204).end();if(!["GET","POST","PATCH"].includes(req.method)){res.setHeader("Allow","GET, POST, PATCH, OPTIONS");return send(res,405,{error:"Method not allowed"});}
+ if(req.method==="OPTIONS")return res.status(204).end();if(req.method!=="GET"){const raw=typeof req.body==="string"?req.body:JSON.stringify(req.body||{});if(raw.length>20000)return send(res,413,{error:"入力内容が大きすぎます。"});}if(!["GET","POST","PATCH"].includes(req.method)){res.setHeader("Allow","GET, POST, PATCH, OPTIONS");return send(res,405,{error:"Method not allowed"});}
  if(!base()||!key()||!process.env.SUPABASE_ANON_KEY)return send(res,503,{error:"管理APIのサーバー設定が完了していません。"});
  try{
   const auth=await authenticateAdmin(req);if(!auth)return send(res,401,{error:"管理者としてログインし直してください。"});const user=auth.user;if(!await consumeRateLimit("admin-members:"+user.id,120,60))return send(res,429,{error:"操作回数が上限に達しました。しばらくしてから再試行してください。"});
@@ -47,23 +51,23 @@ module.exports=async function handler(req,res){
     return send(res,201,{member:safeMember(rows2[0])});
    }
    if(action==="createMember"){
-    const name=clean(b.full_name,100),nameKana=clean(b.full_name_kana,100),email=clean(b.email,254).toLowerCase();if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return send(res,400,{error:"氏名と有効なメールアドレスを入力してください。"});
+    const name=clean(b.full_name,100),nameKana=clean(b.full_name_kana,100),email=clean(b.email,254).toLowerCase(),callsign=clean(b.callsign,20).toUpperCase(),joinedAt=clean(b.joined_at,50)||new Date().toISOString();if(!name||!validEmail(email)||(nameKana&&!/^[ァ-ヶー　 ]+$/.test(nameKana))||!validCallsign(callsign)||!validDate(joinedAt))return send(res,400,{error:"氏名・フリガナ・メールアドレス・コールサイン・入会日を確認してください。"});
     const member_number=clean(b.member_number,40)||("NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase());
-    const licenseStatus=["held","not_held","unknown"].includes(b.radio_license_status)?b.radio_license_status:"unknown",licenseClass=clean(b.radio_license_class,100),licenseNumber=clean(b.radio_license_number,40);if(licenseStatus==="held"&&(!licenseClass||!licenseNumber))return send(res,400,{error:"免許の種類と免許証番号を入力してください。"});
-    const rows=await db("members",{method:"POST",headers:h,body:JSON.stringify({member_number,full_name:encrypt(name),full_name_kana:nameKana?encrypt(nameKana):"",email,radio_license_number:licenseStatus==="held"?encrypt(licenseNumber):"",affiliation:clean(b.affiliation,160),grade:clean(b.grade,40),callsign:clean(b.callsign,20).toUpperCase(),radio_license_status:licenseStatus,radio_license_class:licenseStatus==="held"?licenseClass:"",region:clean(b.region,100),joined_at:b.joined_at||new Date().toISOString(),membership_status:"active",email_opt_in:b.email_opt_in===true,admin_note:clean(b.admin_note,3000)})});
+    const licenseStatus=["held","not_held","unknown"].includes(b.radio_license_status)?b.radio_license_status:"unknown",licenseClass=clean(b.radio_license_class,100),licenseNumber=clean(b.radio_license_number,40);if(licenseStatus==="held"&&(!validLicenseClass(licenseClass)||!licenseNumber))return send(res,400,{error:"免許の種類と免許証番号を正しく入力してください。"});if(Object.prototype.hasOwnProperty.call(b,"email_opt_in")&&typeof b.email_opt_in!=="boolean")return send(res,400,{error:"メール配信同意の値が不正です。"});
+    const rows=await db("members",{method:"POST",headers:h,body:JSON.stringify({member_number,full_name:encrypt(name),full_name_kana:nameKana?encrypt(nameKana):"",email,radio_license_number:licenseStatus==="held"?encrypt(licenseNumber):"",affiliation:clean(b.affiliation,160),grade:clean(b.grade,40),callsign,radio_license_status:licenseStatus,radio_license_class:licenseStatus==="held"?licenseClass:"",region:clean(b.region,100),joined_at:joinedAt,membership_status:"active",email_opt_in:b.email_opt_in===true,admin_note:clean(b.admin_note,3000)})});
     return send(res,201,{member:safeMember(rows[0])});
    }
    if(action==="createActivity"){
-    if(!validId(b.member_id)||!clean(b.title,160))return send(res,400,{error:"会員と活動名を指定してください。"});
-    const rows=await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:b.member_id,activity_type:["note","meeting","radio","research","event","other"].includes(b.activity_type)?b.activity_type:"note",title:clean(b.title,160),description:clean(b.description,3000),happened_at:b.happened_at||new Date().toISOString(),created_by:user.id,created_by_email:user.email||""})});return send(res,201,{activity:rows[0]});
+    const happenedAt=clean(b.happened_at,50)||new Date().toISOString();if(!validId(b.member_id)||!clean(b.title,160)||!validDate(happenedAt)||(b.activity_type!==undefined&&!["note","meeting","radio","research","event","other"].includes(b.activity_type)))return send(res,400,{error:"会員・活動名・活動日時・活動種別を正しく指定してください。"});
+    const rows=await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:b.member_id,activity_type:b.activity_type||"note",title:clean(b.title,160),description:clean(b.description,3000),happened_at:happenedAt,created_by:user.id,created_by_email:user.email||""})});return send(res,201,{activity:rows[0]});
    }
    if(action==="createEvent"){
-    const title=clean(b.title,160),starts_at=clean(b.starts_at,50);if(!title||!Number.isFinite(Date.parse(starts_at)))return send(res,400,{error:"イベント名と開始日時を入力してください。"});
-    const rows=await db("member_events",{method:"POST",headers:h,body:JSON.stringify({title,description:clean(b.description,3000),location:clean(b.location,200),starts_at,ends_at:b.ends_at||null,capacity:b.capacity?Number(b.capacity):null,status:"planned",created_by:user.id})});return send(res,201,{event:rows[0]});
+    const title=clean(b.title,160),starts_at=clean(b.starts_at,50),ends_at=clean(b.ends_at,50),capacity=b.capacity===""||b.capacity===null||b.capacity===undefined?null:Number(b.capacity);if(!title||!validDate(starts_at)||(ends_at&&(!validDate(ends_at)||Date.parse(ends_at)<=Date.parse(starts_at)))||(capacity!==null&&(!Number.isInteger(capacity)||capacity<1||capacity>10000)))return send(res,400,{error:"イベント名・日時・定員を正しく入力してください。"});
+    const rows=await db("member_events",{method:"POST",headers:h,body:JSON.stringify({title,description:clean(b.description,3000),location:clean(b.location,200),starts_at,ends_at:ends_at||null,capacity,status:"planned",created_by:user.id})});return send(res,201,{event:rows[0]});
    }
    if(action==="registerAttendee"){
-    if(!validId(b.event_id)||!validId(b.member_id))return send(res,400,{error:"イベントと会員を指定してください。"});
-    const rows=await db("member_event_attendees?on_conflict=event_id,member_id",{method:"POST",headers:{...h,Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({event_id:b.event_id,member_id:b.member_id,attendance_status:["registered","attended","absent","cancelled"].includes(b.attendance_status)?b.attendance_status:"registered",note:clean(b.note,1000)})});return send(res,201,{attendee:rows[0]});
+    if(!validId(b.event_id)||!validId(b.member_id)||(b.attendance_status!==undefined&&!["registered","attended","absent","cancelled"].includes(b.attendance_status))||(b.note!==undefined&&typeof b.note!=="string"))return send(res,400,{error:"イベント・会員・参加状況を正しく指定してください。"});
+    const rows=await db("member_event_attendees?on_conflict=event_id,member_id",{method:"POST",headers:{...h,Prefer:"resolution=merge-duplicates,return=representation"},body:JSON.stringify({event_id:b.event_id,member_id:b.member_id,attendance_status:b.attendance_status||"registered",note:clean(b.note,1000)})});return send(res,201,{attendee:rows[0]});
    }
    if(action==="createBroadcast"){
     const subject=clean(b.subject,200),body=clean(b.body,10000),audience=b.audience==="active_all_emergency"?"active_all_emergency":"active_opted_in",emergency_reason=clean(b.emergency_reason,500);
