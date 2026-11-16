@@ -1,0 +1,8 @@
+const crypto=require("node:crypto");
+const PREFIX="enc:v1:";
+function key(){const value=process.env.PII_ENCRYPTION_KEY||"";if(!/^[a-f0-9]{64}$/i.test(value))throw new Error("PII_ENCRYPTION_KEY must be a 32-byte hex key");return Buffer.from(value,"hex");}
+function encrypt(value){if(value===null||value===undefined||value==="")return "";const text=String(value);if(text.startsWith(PREFIX))return text;const iv=crypto.randomBytes(12);const cipher=crypto.createCipheriv("aes-256-gcm",key(),iv);const data=Buffer.concat([cipher.update(text,"utf8"),cipher.final()]);const tag=cipher.getAuthTag();return PREFIX+Buffer.concat([iv,tag,data]).toString("base64");}
+function decrypt(value){if(value===null||value===undefined||value==="")return "";const text=String(value);if(!text.startsWith(PREFIX))return text;const packed=Buffer.from(text.slice(PREFIX.length),"base64");if(packed.length<29)throw new Error("Encrypted PII payload is invalid");const iv=packed.subarray(0,12),tag=packed.subarray(12,28),data=packed.subarray(28);const decipher=crypto.createDecipheriv("aes-256-gcm",key(),iv);decipher.setAuthTag(tag);return Buffer.concat([decipher.update(data),decipher.final()]).toString("utf8");}
+function encryptRow(row,fields=["full_name","radio_license_number"]){if(!row)return row;const out={...row};for(const field of fields)if(out[field])out[field]=encrypt(out[field]);return out;}
+function decryptRow(row,fields=["full_name","radio_license_number"]){if(!row)return row;const out={...row};for(const field of fields)if(out[field])out[field]=decrypt(out[field]);return out;}
+module.exports={encrypt,decrypt,encryptRow,decryptRow};
