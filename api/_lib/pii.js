@@ -22,7 +22,6 @@ function keyRing() {
 function encryptWith(value, key, prefix) {
   if (value === null || value === undefined || value === "") return "";
   const text = String(value);
-  if (text.startsWith(V1_PREFIX) || text.startsWith(V2_PREFIX)) return text;
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
   const data = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
@@ -32,7 +31,6 @@ function encryptWith(value, key, prefix) {
 function encrypt(value) {
   if (value === null || value === undefined || value === "") return "";
   const text = String(value);
-  if (text.startsWith(V1_PREFIX) || text.startsWith(V2_PREFIX)) return text;
   const ring = keyRing();
   const packed = encryptWith(value, ring.keys[ring.activeId], "");
   const raw = Buffer.from(packed, "base64");
@@ -69,7 +67,7 @@ function decrypt(value) {
 function encryptRow(row, fields = ["full_name", "full_name_kana", "radio_license_number"]) {
   if (!row) return row;
   const out = { ...row };
-  for (const field of fields) if (out[field]) out[field] = encrypt(out[field]);
+  for (const field of fields) if (out[field] && !String(out[field]).startsWith(V1_PREFIX) && !String(out[field]).startsWith(V2_PREFIX)) out[field] = encrypt(out[field]);
   return out;
 }
 function decryptRow(row, fields = ["full_name", "full_name_kana", "radio_license_number"]) {
