@@ -1,0 +1,70 @@
+name: Weekly encrypted NSWRC database backup
+
+on:
+  schedule:
+    # Every Sunday at 03:00 UTC (12:00 JST)
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nswrc-weekly-db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: "3.2.0"
+
+      - name: Export application database schema and data
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_DB_URL:-}" ]]; then
+            echo "::error::GitHub Actions secret SUPABASE_DB_URL is not configured."
+            exit 1
+          fi
+
+          mkdir -p backup
+          supabase db dump --remote="$SUPABASE_DB_URL" --schema public --file backup/schema.sql
+          supabase db dump --remote="$SUPABASE_DB_URL" --schema public --data-only --use-copy --file backup/data.sql
+          tar -czf /tmp/nswrc-db-backup.tar.gz -C backup schema.sql data.sql
+
+      - name: Encrypt backup archive
+        env:
+          BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${BACKUP_ENCRYPTION_PASSPHRASE:-}" ]]; then
+            echo "::error::GitHub Actions secret BACKUP_ENCRYPTION_PASSPHRASE is not configured."
+            exit 1
+          fi
+
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 600000 \
+            -in /tmp/nswrc-db-backup.tar.gz \
+            -out nswrc-db-backup.tar.gz.enc \
+            -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+          sha256sum nswrc-db-backup.tar.gz.enc > nswrc-db-backup.tar.gz.enc.sha256
+
+      - name: Upload encrypted backup (7-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nswrc-db-backup-${{ github.run_id }}
+          path: |
+            nswrc-db-backup.tar.gz.enc
+            nswrc-db-backup.tar.gz.enc.sha256
+          if-no-files-found: error
+          retention-days: 7
