@@ -1,5 +1,5 @@
 const {encrypt,decryptRow}=require("./_lib/pii");
-const {authenticateAdmin,consumeRateLimit,audit,json}=require("./_lib/admin-security");
+const {authenticateAdmin,consumeRateLimit,audit,json,hasRecentMfa}=require("./_lib/admin-security");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
 const key=()=>process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY||"";
 const headers=()=>{const k=key(),h={apikey:k,"Content-Type":"application/json"};if(!k.startsWith("sb_secret_"))h.Authorization="Bearer "+k;return h;};
@@ -35,7 +35,7 @@ module.exports=async function handler(req,res){
    const auditOk=await audit(req,user,"members.list.view","members",null,{count:migratedMembers.length,approved_application_count:safeApps.length});if(!auditOk)return send(res,503,{error:"閲覧履歴を記録できないため、会員情報を表示できません。"});
    return send(res,200,{members:migratedMembers.map(safeMember),approvedApplications:safeApps.map(safeApplication),activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
   }
-  const b=req.body||{},action=clean(b.action,40);if(req.method!=="GET"){const resourceId=validId(b.id)?b.id:(validId(b.member_id)?b.member_id:null);const auditOk=await audit(req,user,req.method.toLowerCase()+"."+action,action==="member"?"member":"admin",resourceId,{phase:"requested"});if(!auditOk)return send(res,503,{error:"操作履歴を記録できないため、変更を受け付けられません。"});}
+  const b=req.body||{},action=clean(b.action,40);if((action==="member"&&Object.prototype.hasOwnProperty.call(b,"radio_license_number"))||(action==="createMember"&&String(b.radio_license_number||"").trim())){if(!hasRecentMfa(auth.claims,300))return send(res,403,{error:"免許証番号の登録・変更には直近5分以内の追加認証が必要です。",code:"MFA_REQUIRED"});}if(req.method!=="GET"){const resourceId=validId(b.id)?b.id:(validId(b.member_id)?b.member_id:null);const auditOk=await audit(req,user,req.method.toLowerCase()+"."+action,action==="member"?"member":"admin",resourceId,{phase:"requested"});if(!auditOk)return send(res,503,{error:"操作履歴を記録できないため、変更を受け付けられません。"});}
   if(req.method==="POST"){
    if(action==="createFromApplication"){
     const id=clean(b.application_id,64);if(!validId(id))return send(res,400,{error:"申込IDが不正です。"});
