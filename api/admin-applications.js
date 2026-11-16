@@ -131,7 +131,7 @@ module.exports=async function handler(req,res){
     await fetch(base()+"/rest/v1/member_activities",{method:"POST",headers:{...headers,Prefer:"return=minimal"},body:JSON.stringify({member_id:current.id,activity_type:"other",title:"入会申込の取下げに伴い退会処理",description:"管理画面で申込ステータスが取下げに変更されました。",happened_at:leftAt,created_by:user.id,created_by_email:user.email||""})});
    }
   }
-  return send(res,200,{application:updatedRows[0]||null,audit_warning:auditWarning,member_created:memberCreated,member_warning:memberWarning});
+  return send(res,200,{application:updatedRows[0]?decryptRow(updatedRows[0]):null,audit_warning:auditWarning,member_created:memberCreated,member_warning:memberWarning});
  }catch(error){
   console.error("Admin API request failed",error);
   return send(res,502,{error:"管理APIまたはデータベースへの接続に失敗しました。時間をおいて再度お試しください。"});
