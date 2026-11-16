@@ -659,3 +659,16 @@
 .ns-audience-breakdown span{display:flex;justify-content:space-between;gap:8px;color:#536575;font-size:11px}
 .ns-audience-breakdown b{color:#17364d;white-space:nowrap}
 @media(max-width:620px){.ns-audience-breakdown{grid-template-columns:1fr}.ns-audience-breakdown span{font-size:12px}}
+
+/* Split legal name and phonetic name fields */
+.application-page .application-field-full-name{display:grid;grid-template-columns:1fr;gap:16px;padding:18px;border:1px solid #dce4e9;background:#fbfcfd}
+.application-page .application-name-block{display:grid;gap:8px}
+.application-page .application-name-block+ .application-name-block{padding-top:16px;border-top:1px solid #e2e8ec}
+.application-page .application-name-heading{display:flex;align-items:center;gap:10px;color:#203b4e;font-size:14px}
+.application-page .application-name-block>p{margin:0;color:#657784;font-size:11px;line-height:1.7}
+.application-page .application-name-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.application-page .application-name-grid label{display:grid;gap:6px;color:#415766;font-size:12px;font-weight:650}
+.application-page .application-name-grid input{width:100%;min-width:0}
+.application-page .application-name-kana{background:#f7f9fa}
+.application-page .application-name-note{color:#687b88;font-size:11px;line-height:1.7}
+@media(max-width:560px){.application-page .application-name-grid{grid-template-columns:1fr;gap:10px}.application-page .application-field-full-name{padding:14px}}
