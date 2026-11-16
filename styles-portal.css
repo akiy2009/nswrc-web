@@ -674,7 +674,6 @@
 @media(max-width:560px){.application-page .application-name-grid{grid-template-columns:1fr;gap:10px}.application-page .application-field-full-name{padding:14px}}
 
 /* MFA dialog: keep the verification form centered and controls consistently aligned. */
-# mfa-dialog{}
 #mfa-dialog{
   width:min(460px,calc(100vw - 32px));
   max-width:460px;
