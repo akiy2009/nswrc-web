@@ -2,7 +2,7 @@ const {encrypt}=require("../api/_lib/pii");
 const base=process.env.SUPABASE_URL?.replace(/\/$/,"");
 const secret=process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!base||!secret||!process.env.PII_ENCRYPTION_KEY){throw new Error("SUPABASE_URL, SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY), and PII_ENCRYPTION_KEY are required.");}
-const headers={apikey:secret,Authorization:secret.startsWith("sb_secret_")?undefined:"Bearer "+secret,"Content-Type":"application/json"};
+const headers={apikey:secret,"Content-Type":"application/json"};if(!secret.startsWith("sb_secret_"))headers.Authorization="Bearer "+secret;
 async function request(path,options={}){const r=await fetch(base+"/rest/v1/"+path,{...options,headers:{...headers,...options.headers}});const text=await r.text();if(!r.ok)throw new Error("Supabase request failed ("+r.status+"): "+text.slice(0,300));return text?JSON.parse(text):[];}
 async function migrate(table){
  const rows=await request(table+"?select=id,full_name&limit=5000");
