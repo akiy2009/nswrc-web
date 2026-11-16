@@ -120,13 +120,13 @@ module.exports=async function handler(req,res){
    if(Object.prototype.hasOwnProperty.call(b,"radio_license_status"))patch.radio_license_status=b.radio_license_status;
    if(Object.prototype.hasOwnProperty.call(b,"joined_at"))patch.joined_at=b.joined_at;
    if(Object.prototype.hasOwnProperty.call(b,"membership_status")){if(!["active","suspended","withdrawn"].includes(b.membership_status))return send(res,400,{error:"在籍状況が不正です。"});patch.membership_status=b.membership_status;patch.left_at=b.membership_status==="withdrawn"?(b.left_at||new Date().toISOString()):null;}
-   if(patch.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email))return send(res,400,{error:"メールアドレスが不正です。"});
+    if((Object.prototype.hasOwnProperty.call(patch,"email")&&!validEmail(patch.email))||(Object.prototype.hasOwnProperty.call(patch,"full_name")&&!patch.full_name)||(Object.prototype.hasOwnProperty.call(patch,"full_name_kana")&&patch.full_name_kana&&!/^[ァ-ヶー　 ]+$/.test(patch.full_name_kana))||(Object.prototype.hasOwnProperty.call(patch,"callsign")&&!validCallsign(patch.callsign))||(Object.prototype.hasOwnProperty.call(b,"joined_at")&&!validDate(patch.joined_at))||(Object.prototype.hasOwnProperty.call(b,"email_opt_in")&&typeof b.email_opt_in!=="boolean"))return send(res,400,{error:"会員情報の入力内容が不正です。"});
    const beforeRows=await db("members?id=eq."+enc(id)+"&select=id,membership_status,radio_license_status,radio_license_class,radio_license_number&limit=1");if(!beforeRows.length)return send(res,404,{error:"会員が見つかりません。"});
    const before=decryptRow(beforeRows[0]),effectiveStatus=patch.radio_license_status||before.radio_license_status||"unknown";
    if(effectiveStatus==="held"){
     const effectiveClass=Object.prototype.hasOwnProperty.call(patch,"radio_license_class")?patch.radio_license_class:before.radio_license_class;
     const effectiveNumber=Object.prototype.hasOwnProperty.call(patch,"radio_license_number")?patch.radio_license_number:before.radio_license_number;
-    if(!effectiveClass)return send(res,400,{error:"免許の種類を入力してください。"});
+    if(!validLicenseClass(effectiveClass))return send(res,400,{error:"免許の種類を正しく入力してください。"});
     if(!effectiveNumber)return send(res,400,{error:"免許証番号を入力してください。"});
    }else{
     patch.radio_license_class="";
