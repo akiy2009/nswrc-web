@@ -26,6 +26,7 @@ const serviceHeaders=()=>{
 module.exports=async function handler(req,res){
  if(!cors(req,res))return send(res,403,{error:"この送信元からのアクセスは許可されていません。"});
  if(req.method==="OPTIONS")return res.status(204).end();
+ if(req.method==="PATCH"){const raw=typeof req.body==="string"?req.body:JSON.stringify(req.body||{});if(raw.length>8000)return send(res,413,{error:"入力内容が大きすぎます。"});}
  if(!["GET","PATCH"].includes(req.method)){
   res.setHeader("Allow","GET, PATCH, OPTIONS");
   return send(res,405,{error:"Method not allowed"});
@@ -61,7 +62,7 @@ module.exports=async function handler(req,res){
   const hasApprovalNotice=Object.prototype.hasOwnProperty.call(req.body||{},"approval_notice_sent_at");
   const note=hasNote?String(req.body.admin_note??"").trim():"";
   const noticeAt=hasApprovalNotice?String(req.body.approval_notice_sent_at||""):"";
-  if(!/^[0-9a-f-]{36}$/i.test(id)||(!hasStatus&&!hasNote&&!hasApprovalNotice)||(hasStatus&&!["pending","reviewing","approved","rejected","withdrawn"].includes(status))||(hasNote&&note.length>2000)||(hasApprovalNotice&&(!Number.isFinite(Date.parse(noticeAt))))){
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)||(!hasStatus&&!hasNote&&!hasApprovalNotice)||(hasStatus&&!["pending","reviewing","approved","rejected","withdrawn"].includes(status))||(hasNote&&(typeof req.body.admin_note!=="string"||note.length>2000))||(hasApprovalNotice&&(!Number.isFinite(Date.parse(noticeAt))))){
    return send(res,400,{error:"更新内容が不正です。"});
   }
   const existingRes=await fetch(base()+"/rest/v1/membership_applications?id=eq."+encodeURIComponent(id)+"&select=id,status,admin_note,approval_notice_sent_at,full_name,full_name_kana,email,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,email_opt_in,created_at",{headers});
