@@ -21,8 +21,8 @@ module.exports=async function handler(req,res){
   if(req.method==="GET"){
    const [members,apps,activities,events,attendees,broadcasts,allApps]=await Promise.all([
     db("members?select=*&order=joined_at.desc&limit=2000"),
-    db("membership_applications?select=id,full_name,radio_license_number&limit=2000"),
-    db("membership_applications?select=id,full_name,email,email_opt_in,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,created_at,status&status=eq.approved&order=created_at.asc&limit=500"),
+    db("membership_applications?select=id,full_name,full_name_kana,radio_license_number&limit=2000"),
+    db("membership_applications?select=id,full_name,full_name_kana,email,email_opt_in,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,created_at,status&status=eq.approved&order=created_at.asc&limit=500"),
     db("member_activities?select=*&order=happened_at.desc&limit=2000"),
     db("member_events?select=*&order=starts_at.desc&limit=500"),
     db("member_event_attendees?select=*&limit=5000"),
