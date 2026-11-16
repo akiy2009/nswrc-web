@@ -1,3 +1,4 @@
+const {encrypt,decryptRow}=require("./_lib/pii");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
 const key=()=>process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY||"";
 const headers=()=>{const k=key(),h={apikey:k,"Content-Type":"application/json"};if(!k.startsWith("sb_secret_"))h.Authorization="Bearer "+k;return h;};
@@ -25,15 +26,15 @@ module.exports=async function handler(req,res){
     db("member_event_attendees?select=*&limit=5000"),
     db("member_broadcasts?select=*&order=created_at.desc&limit=200")
    ]);
-   return send(res,200,{members,approvedApplications:apps,activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
+   return send(res,200,{members:Array.isArray(members)?members.map(m=>decryptRow(m)):members,approvedApplications:Array.isArray(apps)?apps.map(a=>decryptRow(a)):apps,activities,events,attendees,broadcasts,mailConfigured:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)});
   }
   const b=req.body||{},action=clean(b.action,40);
   if(req.method==="POST"){
    if(action==="createFromApplication"){
     const id=clean(b.application_id,64);if(!validId(id))return send(res,400,{error:"申込IDが不正です。"});
-    const rows=await db("membership_applications?id=eq."+enc(id)+"&select=id,status,full_name,email,affiliation,grade,callsign,radio_license_status,radio_license_class,region,created_at,updated_at&limit=1");
+    const rows=await db("membership_applications?id=eq."+enc(id)+"&select=id,status,full_name,email,affiliation,grade,callsign,radio_license_status,radio_license_class,radio_license_number,region,created_at,updated_at&limit=1");
     if(!rows.length||rows[0].status!=="approved")return send(res,409,{error:"承認済みの申込だけ会員登録できます。"});
-    const a=rows[0],existing=await db("members?source_application_id=eq."+enc(id)+"&select=id&limit=1");if(existing.length)return send(res,409,{error:"この申込はすでに会員登録されています。"});
+    const a=decryptRow(rows[0]),existing=await db("members?source_application_id=eq."+enc(id)+"&select=id&limit=1");if(existing.length)return send(res,409,{error:"この申込はすでに会員登録されています。"});
     const member_number="NSWRC-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
     const rows2=await db("members",{method:"POST",headers:h,body:JSON.stringify({source_application_id:id,member_number,full_name:a.full_name,email:a.email,affiliation:a.affiliation,grade:a.grade,callsign:a.callsign,radio_license_status:a.radio_license_status||"unknown",radio_license_class:a.radio_license_class||"",region:a.region,email_opt_in:a.email_opt_in===true,joined_at:a.updated_at||a.created_at||new Date().toISOString(),membership_status:"active",email_opt_in:false})});
     return send(res,201,{member:rows2[0]});
@@ -102,16 +103,16 @@ module.exports=async function handler(req,res){
   const id=clean(b.id,64);if(!validId(id))return send(res,400,{error:"更新対象IDが不正です。"});
   if(action==="member"){
    const patch={updated_at:new Date().toISOString()};
-   for(const [k,max] of Object.entries({full_name:100,email:254,affiliation:160,grade:40,callsign:20,radio_license_class:100,region:100,admin_note:3000}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);
+   for(const [k,max] of Object.entries({full_name:100,email:254,radio_license_number:40,affiliation:160,grade:40,callsign:20,radio_license_class:100,region:100,admin_note:3000}))if(Object.prototype.hasOwnProperty.call(b,k))patch[k]=clean(b[k],max);if(patch.full_name)patch.full_name=encrypt(patch.full_name);if(patch.radio_license_number)patch.radio_license_number=encrypt(patch.radio_license_number);
    if(Object.prototype.hasOwnProperty.call(b,"email_opt_in"))patch.email_opt_in=b.email_opt_in===true;
-   if(Object.prototype.hasOwnProperty.call(b,"radio_license_status")){if(!["held","not_held","unknown"].includes(b.radio_license_status))return send(res,400,{error:"無線従事者免許の保有状況が不正です。"});patch.radio_license_status=b.radio_license_status;if(b.radio_license_status!=="held")patch.radio_license_class="";else if(!patch.radio_license_class)return send(res,400,{error:"免許の種類を入力してください。"});}
+   if(Object.prototype.hasOwnProperty.call(b,"radio_license_status")){if(!["held","not_held","unknown"].includes(b.radio_license_status))return send(res,400,{error:"無線従事者免許の保有状況が不正です。"});patch.radio_license_status=b.radio_license_status;if(b.radio_license_status!=="held")patch.radio_license_class="";else if(!patch.radio_license_class)return send(res,400,{error:"免許の種類を入力してください。"});else if(!patch.radio_license_number&&!Object.prototype.hasOwnProperty.call(b,"radio_license_number"))return send(res,400,{error:"免許証番号を入力してください。"});else if(Object.prototype.hasOwnProperty.call(b,"radio_license_number")&&!clean(b.radio_license_number,40))return send(res,400,{error:"免許証番号を入力してください。"});}
    if(Object.prototype.hasOwnProperty.call(b,"joined_at"))patch.joined_at=b.joined_at;
    if(Object.prototype.hasOwnProperty.call(b,"membership_status")){if(!["active","suspended","withdrawn"].includes(b.membership_status))return send(res,400,{error:"在籍状況が不正です。"});patch.membership_status=b.membership_status;patch.left_at=b.membership_status==="withdrawn"?(b.left_at||new Date().toISOString()):null;}
    if(patch.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email))return send(res,400,{error:"メールアドレスが不正です。"});
    const beforeRows=await db("members?id=eq."+enc(id)+"&select=id,membership_status&limit=1");if(!beforeRows.length)return send(res,404,{error:"会員が見つかりません。"});
    const rows=await db("members?id=eq."+enc(id),{method:"PATCH",headers:h,body:JSON.stringify(patch)});if(!rows.length)return send(res,404,{error:"会員が見つかりません。"});
    if(patch.membership_status&&patch.membership_status!==beforeRows[0].membership_status){const label={active:"在籍",suspended:"休会・停止",withdrawn:"退会"};await db("member_activities",{method:"POST",headers:h,body:JSON.stringify({member_id:id,activity_type:"other",title:"在籍状況を"+label[beforeRows[0].membership_status]+"から"+label[patch.membership_status]+"に変更",description:"管理者 "+(user.email||"")+" が在籍状況を更新しました。",happened_at:new Date().toISOString(),created_by:user.id,created_by_email:user.email||""})});}
-   return send(res,200,{member:rows[0]});
+   return send(res,200,{member:decryptRow(rows[0])});
   }
   if(action==="attendee"){
    const before=await db("member_event_attendees?id=eq."+enc(id)+"&select=id,event_id,member_id,attendance_status&limit=1");if(!before.length)return send(res,404,{error:"参加登録が見つかりません。"});
