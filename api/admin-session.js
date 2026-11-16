@@ -22,6 +22,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({ session_id: auth.sessionId, user_id: auth.user.id, revoked_at: new Date().toISOString(), expires_at: new Date(exp * 1000).toISOString() })
     });
     if (!response.ok) return json(res, 503, { error: "サーバー側でログアウト状態を失効できませんでした。" });
+    await fetch(base() + "/rest/v1/admin_revoked_sessions?expires_at=lt." + encodeURIComponent(new Date().toISOString()), { method: "DELETE", headers: serviceHeaders() });
     const auditOk = await audit(req, auth.user, "admin.session.revoke", "session", null, { session_id: auth.sessionId });
     return json(res, 200, { ok: true, audit_warning: !auditOk });
   } catch (error) {
