@@ -1,6 +1,7 @@
 const {consumeRateLimit,ipDigest}=require("./_lib/admin-security");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
 const allowedOrigins=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
+const MAX_BODY=8000;
 function send(res,status,data){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(data);}
 function cors(req,res){
  const origin=req.headers.origin,allowed=allowedOrigins();
@@ -16,13 +17,16 @@ module.exports=async function handler(req,res){
  if(req.method==="OPTIONS")return res.status(204).end();
  if(req.method!=="POST"){res.setHeader("Allow","POST, OPTIONS");return send(res,405,{error:"Method not allowed"});}
  if(!base()||!key())return send(res,503,{error:"お問い合わせ受付のサーバー設定が完了していません。"});
+ const raw=typeof req.body==="string"?req.body:JSON.stringify(req.body||{});
+ if(raw.length>MAX_BODY)return send(res,413,{error:"入力内容が大きすぎます。"});
+ let b;try{b=typeof req.body==="object"&&req.body?req.body:JSON.parse(raw);}catch{return send(res,400,{error:"入力内容を読み取れません。"});}
+ if(!b||typeof b!=="object"||Array.isArray(b))return send(res,400,{error:"入力形式が正しくありません。"});
  try{
   const digest=ipDigest(req)||"unknown";
   if(!await consumeRateLimit("public-contact:"+digest,5,3600))return send(res,429,{error:"お問い合わせの受付回数が上限に達しました。時間をおいて再試行してください。"});
-  const b=req.body||{};
-  if(b.website)return send(res,200,{ok:true});
+  if(typeof b.website==="string"&&b.website.trim())return send(res,200,{ok:true});
   const allowed=["研究会について","参加・入会について","イベント・共同企画について","ニュース掲載依頼","その他"];
-  const category=String(b.category||"").trim(),name=String(b.name||"").trim(),email=String(b.email||"").trim(),affiliation=String(b.affiliation||"").trim(),message=String(b.message||"").trim();
+  const category=typeof b.category==="string"?b.category.trim():"",name=typeof b.name==="string"?b.name.trim():"",email=typeof b.email==="string"?b.email.trim():"",affiliation=typeof b.affiliation==="string"?b.affiliation.trim():"",message=typeof b.message==="string"?b.message.trim():"";
   if(!allowed.includes(category)||name.length<1||name.length>100||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||affiliation.length>120||message.length<10||message.length>5000||b.consent!==true)
    return send(res,400,{error:"入力内容を確認してください。"});
   const upstream=await fetch(base()+"/rest/v1/contact_messages",{method:"POST",headers:headers(),body:JSON.stringify({category,name,email,affiliation,message,consent:true})});
