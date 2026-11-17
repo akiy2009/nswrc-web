@@ -705,3 +705,185 @@
   #mfa-dialog .ns-detail-head{padding:17px 18px}
   #mfa-dialog .ns-detail-editor{padding:18px;gap:13px}
 }
+
+
+/* Administration console: practical refinements for daily use */
+.ns-admin .ns-side-nav{
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#496477 transparent;
+}
+.ns-admin .ns-side-link,
+.ns-admin .ns-primary-button,
+.ns-admin .ns-outline-button,
+.ns-admin .ns-secondary-button,
+.ns-admin .ns-clear-button,
+.ns-admin .ns-row-open,
+.ns-admin .ns-pagination button{
+  min-height:42px;
+}
+.ns-admin input,
+.ns-admin select,
+.ns-admin textarea{
+  accent-color:#315f7a;
+}
+.ns-admin input:focus-visible,
+.ns-admin select:focus-visible,
+.ns-admin textarea:focus-visible,
+.ns-admin button:focus-visible,
+.ns-admin a:focus-visible{
+  outline:2px solid #2e7397;
+  outline-offset:2px;
+}
+.ns-admin .ns-panel,
+.ns-admin .ns-metric,
+.ns-admin .ns-filter-bar,
+.ns-admin .ns-table-wrap{
+  border-color:#d5dfe5;
+}
+.ns-admin .ns-table-wrap{
+  max-width:100%;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+}
+.ns-admin .ns-table thead th{
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+.ns-admin .ns-detail-dialog{
+  overscroll-behavior:contain;
+}
+.ns-admin .ns-detail-editor label{
+  line-height:1.65;
+}
+.ns-admin .ns-detail-editor input,
+.ns-admin .ns-detail-editor select,
+.ns-admin .ns-detail-editor textarea{
+  min-height:42px;
+  padding:9px 11px;
+  border:1px solid #cbd7df;
+  border-radius:0;
+  background:#fff;
+  color:#263f50;
+  font:inherit;
+  font-size:12px;
+}
+.ns-admin .ns-detail-editor textarea{
+  min-height:96px;
+  resize:vertical;
+  line-height:1.8;
+}
+.ns-admin .ns-detail-editor input:focus,
+.ns-admin .ns-detail-editor select:focus,
+.ns-admin .ns-detail-editor textarea:focus{
+  outline:2px solid #4b91c8;
+  outline-offset:1px;
+}
+.ns-admin .ns-status{
+  line-height:1.5;
+}
+.ns-admin .ns-toast{
+  max-width:min(440px,calc(100vw - 32px));
+  padding:14px 18px;
+  box-shadow:0 5px 20px rgba(15,38,54,.12);
+}
+@media(max-width:800px){
+  .ns-admin .ns-sidebar{
+    padding:12px 16px 10px;
+  }
+  .ns-admin .ns-side-nav{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:5px;
+    overflow:visible;
+  }
+  .ns-admin .ns-side-section-label{
+    display:block;
+    grid-column:1/-1;
+    padding:10px 3px 3px;
+    color:#a9bdca;
+    font-size:8px;
+    letter-spacing:.12em;
+  }
+  .ns-admin .ns-side-link{
+    justify-content:flex-start;
+    min-width:0;
+    min-height:42px;
+    gap:7px;
+    padding:0 9px;
+    border-color:#29485e;
+    font-size:10px;
+    white-space:nowrap;
+  }
+  .ns-admin .ns-side-mark{
+    display:inline;
+    color:#91a9b9;
+    font-size:8px;
+  }
+  .ns-admin .ns-nav-count{
+    min-width:18px;
+    margin-left:auto;
+    padding:2px 4px;
+  }
+  .ns-admin .ns-sidebar-bottom{
+    flex-wrap:wrap;
+  }
+}
+@media(max-width:560px){
+  .ns-admin .ns-side-nav{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .ns-admin .ns-side-section-label{
+    padding-top:9px;
+  }
+  .ns-admin .ns-side-link{
+    min-height:44px;
+    padding:0 10px;
+    font-size:11px;
+  }
+  .ns-admin .ns-side-mark{
+    min-width:15px;
+    font-size:9px;
+  }
+  .ns-admin .ns-sidebar-bottom{
+    gap:10px 14px;
+    padding-top:12px;
+  }
+  .ns-admin .ns-connection{
+    flex-basis:100%;
+  }
+  .ns-admin .ns-topbar{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:rgba(255,255,255,.98);
+  }
+  .ns-admin .ns-table-toolbar{
+    flex-wrap:wrap;
+  }
+  .ns-admin .ns-pagination{
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .ns-admin .ns-detail-dialog{
+    width:calc(100% - 20px);
+    max-height:92vh;
+    margin:auto;
+  }
+  .ns-admin .ns-toast{
+    right:12px;
+    bottom:12px;
+    max-width:calc(100vw - 24px);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .ns-admin *,
+  .ns-admin *::before,
+  .ns-admin *::after{
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+  }
+}
