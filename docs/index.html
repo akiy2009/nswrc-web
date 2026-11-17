@@ -100,7 +100,7 @@
       </div>
     </section>
 
-    <section class="section activity-record-preview"><div class="container"><div class="section-heading heading-row"><div><p class="section-en">ACTIVITY HISTORY</p><h2>活動実績</h2></div><a class="news-all-link" href="activity-history.html">活動実績をすべて見る　›</a></div><article class="activity-highlight"><time datetime="2026-08-22">2026.08.22</time><div><p class="activity-highlight-kicker">EVENT PARTICIPATION</p><h3>高専カンファレンス無線通信 IN 大阪</h3><p>2026年8月22日に開催された「高専カンファレンス無線通信 IN 大阪」に、8J3WLCF記念局として参加しました。</p><a href="activity-history.html">活動内容を読む　›</a></div></article></div></section>
+    <section class="section activity-record-preview"><div class="container"><div class="section-heading heading-row"><div><p class="section-en">ACTIVITY HISTORY</p><h2>活動実績</h2></div><a class="news-all-link" href="activity-history.html">活動実績をすべて見る　›</a></div><article class="activity-highlight"><time datetime="2026-08-22">2026.08.22</time><div><p class="activity-highlight-kicker">EVENT PARTICIPATION</p><h3>高専カンファレンス無線通信 IN 大阪</h3><p>2026年8月22日、「高専カンファレンス無線通信 IN 大阪」に全国学生無線通信研究会の記念局8J3WLCFとして参加しました。開催日・参加形態など、確認できている情報を活動実績ページに掲載しています。</p><a href="activity-history.html">活動内容を読む　›</a></div></article></div></section>
 
     <section class="section policy" id="policy">
       <div class="container">
@@ -174,5 +174,94 @@
       if (window.innerWidth > 760) closeMenu();
     });
   </script>
-<script>(()=>{const el=document.getElementById("site-loader");if(!el)return;let done=false;const start=performance.now();const hide=()=>{if(done)return;done=true;setTimeout(()=>{el.classList.add("is-hidden");setTimeout(()=>el.remove(),650);},Math.max(0,520-(performance.now()-start)));};if(document.readyState==="complete")hide();else addEventListener("load",hide,{once:true});setTimeout(hide,3000);})();</script></body>
+<script>(()=>{const el=document.getElementById("site-loader");if(!el)return;let done=false;const start=performance.now();const hide=()=>{if(done)return;done=true;setTimeout(()=>{el.classList.add("is-hidden");setTimeout(()=>el.remove(),650);},Math.max(0,520-(performance.now()-start)));};if(document.readyState==="complete")hide();else addEventListener("load",hide,{once:true});setTimeout(hide,3000);})();</script><script>
+(() => {
+  const list = document.getElementById('latest-news-list');
+  if (!list) return;
+
+  const showMessage = (message) => {
+    const status = document.createElement('p');
+    status.className = 'latest-news-empty';
+    status.setAttribute('role', 'status');
+    status.textContent = message;
+    list.replaceChildren(status);
+  };
+
+  const loadNews = async () => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+    try {
+      const response = await fetch('news-data.json', {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const items = await response.json();
+      if (!Array.isArray(items)) throw new Error('Invalid news data');
+
+      const validItems = items
+        .filter(item => item && typeof item === 'object' &&
+          typeof item.date === 'string' &&
+          typeof item.title === 'string' &&
+          typeof item.slug === 'string' &&
+          /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug))
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 5);
+
+      if (!validItems.length) {
+        showMessage('現在、掲載中のお知らせはありません。');
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      for (const item of validItems) {
+        const article = document.createElement('article');
+        article.className = 'news-card';
+
+        const link = document.createElement('a');
+        link.className = 'news-card-link';
+        link.href = 'news/' + encodeURIComponent(item.slug) + '.html';
+
+        const meta = document.createElement('div');
+        meta.className = 'news-card-meta';
+        const date = document.createElement('time');
+        date.dateTime = item.date;
+        date.textContent = item.date;
+        const category = document.createElement('span');
+        category.className = 'notice-category';
+        category.textContent = typeof item.category === 'string' ? item.category : 'お知らせ';
+        meta.append(date, category);
+
+        const title = document.createElement('h3');
+        title.className = 'news-card-title';
+        title.textContent = item.title;
+        const summary = document.createElement('p');
+        summary.className = 'news-card-summary';
+        summary.textContent = typeof item.summary === 'string' ? item.summary : '';
+        const more = document.createElement('span');
+        more.className = 'news-card-more';
+        more.textContent = '記事を読む  ›';
+
+        link.append(meta, title, summary, more);
+        article.append(link);
+        fragment.append(article);
+      }
+      list.replaceChildren(fragment);
+    } catch (error) {
+      console.error('[NSWRC] Failed to load homepage news:', error);
+      showMessage(
+        error && error.name === 'AbortError'
+          ? 'お知らせの読み込みがタイムアウトしました。お知らせ一覧をご確認ください。'
+          : 'お知らせを読み込めませんでした。時間をおいて再度ご確認ください。'
+      );
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  loadNews();
+})();
+</script>
+</body>
 </html>
