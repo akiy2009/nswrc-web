@@ -26,6 +26,7 @@ module.exports=async function handler(req,res){
  const raw=typeof req.body==="string"?req.body:JSON.stringify(req.body||{});
  if(raw.length>MAX_BODY)return send(res,413,{error:"入力内容が大きすぎます。"});
  let b;try{b=typeof req.body==="object"&&req.body?req.body:JSON.parse(raw);}catch{return send(res,400,{error:"入力内容を読み取れません。"});}
+ if(!b||typeof b!=="object"||Array.isArray(b))return send(res,400,{error:"入力形式が正しくありません。"});
  const clean=(v,n)=>typeof v==="string"?v.trim().slice(0,n):"";
  if(clean(b.website,200))return send(res,200,{application_id:"received"});
  try{const digest=ipDigest(req)||"unknown";if(!await consumeRateLimit("public-application:"+digest,3,3600))return send(res,429,{error:"申込の受付回数が上限に達しました。時間をおいて再試行してください。"});}catch(e){console.error("Application rate limit unavailable",e.message);return send(res,503,{error:"受付システムの安全確認に失敗しました。時間をおいて再試行してください。"});}
@@ -51,7 +52,7 @@ module.exports=async function handler(req,res){
    const upstreamCode=typeof data.code==="string"?data.code:"SUPABASE_ERROR";
    const upstreamMessage=typeof data.message==="string"?data.message.slice(0,240):"Supabase rejected the insert";
    console.error("Supabase insert failed",JSON.stringify({status:response.status,code:upstreamCode,message:upstreamMessage}));
-   return send(res,502,{error:"申込情報を保存できませんでした。",diagnostic:{service:"supabase",status:response.status,code:upstreamCode,message:upstreamMessage}});
+   return send(res,502,{error:"申込情報を保存できませんでした。"});
   }
   return send(res,201,{application_id:data[0]?.id||"received"});
  }catch(e){
