@@ -1,4 +1,5 @@
 const {authenticateAdmin,consumeRateLimit,audit}=require("./_lib/admin-security");
+const {encrypt,decryptRow}=require("./_lib/pii");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
 const origins=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io,https://nswrc-membership.vercel.app").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
 function send(res,status,data){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(data);}
@@ -15,16 +16,16 @@ module.exports=async function handler(req,res){
    const data=await r.json().catch(()=>[]);
    if(!r.ok){console.error("Contact admin read failed",r.status);return send(res,502,{error:"お問い合わせ一覧を取得できません。"});}
    const auditOk=await audit(req,user,"contacts.list.view","contacts",null,{count:Array.isArray(data)?data.length:0});if(!auditOk)return send(res,503,{error:"閲覧履歴を記録できないため、お問い合わせ情報を表示できません。"});
-   return send(res,200,{contacts:data});
+   return send(res,200,{contacts:Array.isArray(data)?data.map(row=>decryptRow(row,["name","email","affiliation","message","admin_note"])):[]});
   }
   const id=String(req.body?.id||""),status=req.body?.status,noteProvided=Object.prototype.hasOwnProperty.call(req.body||{},"admin_note"),note=noteProvided?String(req.body.admin_note??"").trim():"";
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)||(!["new","reading","responding","resolved","closed"].includes(status)&&!noteProvided)||(status!==undefined&&!["new","reading","responding","resolved","closed"].includes(status))||(noteProvided&&(typeof req.body.admin_note!=="string"||note.length>2000)))return send(res,400,{error:"更新内容が不正です。"});
   const auditOk=await audit(req,user,"contact.update.requested","contact",id,{status_changed:status!==undefined,note_changed:noteProvided});if(!auditOk)return send(res,503,{error:"操作履歴を記録できないため、変更を受け付けられません。"});
-  const patch={updated_at:new Date().toISOString()};if(status!==undefined)patch.status=status;if(noteProvided)patch.admin_note=note;
+  const patch={updated_at:new Date().toISOString()};if(status!==undefined)patch.status=status;if(noteProvided){try{patch.admin_note=encrypt(note);}catch(e){console.error("Contact note encryption unavailable",e.message);return send(res,503,{error:"運営メモの暗号化設定が完了していません。変更を保存できません。"});}}
   const r=await fetch(base()+"/rest/v1/contact_messages?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{...h,Prefer:"return=representation"},body:JSON.stringify(patch)});
   const rows=await r.json().catch(()=>[]);
   if(!r.ok){console.error("Contact update failed",r.status);return send(res,502,{error:"お問い合わせ情報を更新できません。"});}
   if(!rows.length)return send(res,404,{error:"対象のお問い合わせが見つかりません。"});
-  return send(res,200,{contact:rows[0]});
+  return send(res,200,{contact:decryptRow(rows[0],["name","email","affiliation","message","admin_note"])});
  }catch(e){console.error("Contact admin API failed",e);return send(res,502,{error:"管理APIまたはデータベースへの接続に失敗しました。"});}
 };

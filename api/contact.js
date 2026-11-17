@@ -1,4 +1,5 @@
 const {consumeRateLimit,ipDigest}=require("./_lib/admin-security");
+const {encrypt}=require("./_lib/pii");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
 const allowedOrigins=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
 const MAX_BODY=8000;
@@ -29,7 +30,8 @@ module.exports=async function handler(req,res){
   const category=typeof b.category==="string"?b.category.trim():"",name=typeof b.name==="string"?b.name.trim():"",email=typeof b.email==="string"?b.email.trim():"",affiliation=typeof b.affiliation==="string"?b.affiliation.trim():"",message=typeof b.message==="string"?b.message.trim():"";
   if(!allowed.includes(category)||name.length<1||name.length>100||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||affiliation.length>120||message.length<10||message.length>5000||b.consent!==true)
    return send(res,400,{error:"入力内容を確認してください。"});
-  const upstream=await fetch(base()+"/rest/v1/contact_messages",{method:"POST",headers:headers(),body:JSON.stringify({category,name,email,affiliation,message,consent:true})});
+  let encrypted;try{encrypted={name:encrypt(name),email:encrypt(email),affiliation:encrypt(affiliation),message:encrypt(message)};}catch(e){console.error("Contact PII encryption unavailable",e.message);return send(res,503,{error:"お問い合わせ情報の暗号化設定が完了していません。受付を停止しています。"});}
+  const upstream=await fetch(base()+"/rest/v1/contact_messages",{method:"POST",headers:headers(),body:JSON.stringify({category,...encrypted,consent:true})});
   if(!upstream.ok){const detail=await upstream.text();console.error("Contact insert failed",upstream.status,detail.slice(0,500));return send(res,502,{error:"お問い合わせを受け付けられませんでした。時間をおいて再度お試しください。"});}
   return send(res,201,{ok:true});
  }catch(e){console.error("Contact API failed",e);return send(res,502,{error:"お問い合わせAPIに接続できません。時間をおいて再度お試しください。"});}
