@@ -5,6 +5,22 @@ const root = process.cwd();
 const contentDir = resolve(root, 'content/news');
 const template = await readFile(resolve(root, 'templates/news-article.html'), 'utf8');
 
+function escapeAttribute(value) {
+  return String(value).replace(/[&<>\"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
+function renderArticle(item) {
+  const title = item.title + ' | 全国学生無線通信研究会';
+  const url = 'https://akiy2009.github.io/nswrc-web/news/' + item.slug + '.html';
+  return template
+    .replaceAll('__PAGE_TITLE__', escapeAttribute(title))
+    .replaceAll('__OG_TITLE__', escapeAttribute(title))
+    .replaceAll('__OG_DESCRIPTION__', escapeAttribute(item.summary))
+    .replaceAll('__OG_URL__', escapeAttribute(url))
+    .replaceAll('__OG_DATE__', escapeAttribute(item.date));
+}
 function parseFrontmatter(source, file) {
   const match = source.replace(/^\uFEFF/, '').match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*(?:\r?\n|$)([\s\S]*)$/);
   if (!match) throw new Error(`Missing YAML front matter: ${file}`);
@@ -62,7 +78,7 @@ for (const item of items) {
   for (const base of ['news', 'docs/news']) {
     const target = resolve(root, base, item.slug + '.html');
     await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, template, 'utf8');
+    await writeFile(target, renderArticle(item), 'utf8');
     console.log('Generated ' + target);
   }
 }
