@@ -46,14 +46,14 @@ module.exports=async function handler(req,res){
     fetch(base()+"/rest/v1/membership_admin_audit?select=id,application_id,actor_email,action,old_status,new_status,created_at&order=created_at.desc&limit=100",{headers})
    ]);
    const apps=await appsRes.json().catch(()=>[]);
-   const audit=await auditRes.json().catch(()=>[]);
+   const auditRows=await auditRes.json().catch(()=>[]);
    if(!appsRes.ok){
     console.error("Admin applications read failed",appsRes.status);
     return send(res,502,{error:"申込一覧を取得できません。データベース設定と最新マイグレーションを確認してください。"});
    }
    const auditOk=await audit(req,user,"applications.list.view","applications",null,{count:Array.isArray(apps)?apps.length:0});
    if(!auditOk)return send(res,503,{error:"閲覧履歴を記録できないため、申込情報を表示できません。"});
-   return send(res,200,{applications:Array.isArray(apps)?apps.map(safeApplication):apps,activities:auditRes.ok?audit:[],audit_available:auditRes.ok});
+   return send(res,200,{applications:Array.isArray(apps)?apps.map(safeApplication):apps,activities:auditRes.ok?auditRows:[],audit_available:auditRes.ok});
   }
   const id=String(req.body?.id||"");
   const status=req.body?.status;
