@@ -307,11 +307,12 @@ const memberApi=async(method="GET",body)=>{const r=await fetch(API_BASE+"/api/ad
 async function logAdminAudit(action,resourceType){const r=await fetch(API_BASE+"/api/admin-audit",{method:"POST",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},body:JSON.stringify({action,resource_type:resourceType}),cache:"no-store"});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"操作履歴を記録できませんでした。");return d;}
 let licenseNumberLoaded=false;
 function decodeAdminClaims(){try{const part=accessToken.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");return JSON.parse(atob(part.padEnd(Math.ceil(part.length/4)*4,"=")));}catch{return null;}}
+function getPasswordAuthTime(claims){const timestamps=(Array.isArray(claims?.amr)?claims.amr:[]).filter(x=>x?.method==="password").map(x=>Number(x.timestamp)).filter(Number.isFinite);return timestamps.length?Math.max(...timestamps):NaN;}
 function requestMfaCode({qr,secret}){return new Promise(resolve=>{const dialog=$("mfa-dialog"),area=$("mfa-enroll-area"),button=$("mfa-verify"),code=$("mfa-code"),error=$("mfa-error");area.hidden=!qr;if(qr){$("mfa-qr").src=qr;$("mfa-secret").textContent=secret||"";$("mfa-dialog-message").textContent="認証アプリでQRコードを読み取り、登録後に表示された6桁のコードを入力してください。";}else{$("mfa-dialog-message").textContent="認証アプリに表示された6桁のコードを入力してください。";}code.value="";error.textContent="";const finish=value=>{button.removeEventListener("click",submit);dialog.removeEventListener("close",cancel);dialog.close();resolve(value);};const submit=()=>{const value=code.value.trim();if(!/^[0-9]{6}$/.test(value)){error.textContent="6桁の数字を入力してください。";return;}finish(value);};const cancel=()=>finish(null);button.addEventListener("click",submit);dialog.addEventListener("close",cancel,{once:true});dialog.showModal();code.focus();});}
 async function ensureRecentMfa(){
   if(!supabaseClient||!accessToken)throw new Error("管理者セッションを確認できません。");
   const initialClaims=decodeAdminClaims(),now=Math.floor(Date.now()/1000);
-  const authTime=Number(initialClaims?.auth_time);
+  const authTime=getPasswordAuthTime(initialClaims);
   if(!Number.isFinite(authTime)||authTime>now+60||now-authTime>12*60*60){
     throw new Error("管理者セッションの有効期限が切れています。いったんログアウトし、メールアドレスとパスワードからログインし直してください。");
   }
@@ -342,7 +343,7 @@ async function ensureRecentMfa(){
   currentUser=verifiedData.user||currentUser;
   const updated=decodeAdminClaims();
   if(updated?.aal!=="aal2"||!updated?.session_id||!updated?.sub)throw new Error("追加認証後の認証情報が不完全です。ログアウトして再度ログインしてください。");
-  const verifiedAuthTime=Number(updated.auth_time);
+  const verifiedAuthTime=getPasswordAuthTime(updated);
   if(!Number.isFinite(verifiedAuthTime)||verifiedAuthTime>now+60||now-verifiedAuthTime>12*60*60)throw new Error("管理者セッションの有効期限が切れています。ログアウトして再度ログインしてください。");
   // Confirm that this exact token still resolves to the signed-in admin account.
   const userResponse=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+accessToken},cache:"no-store"});
@@ -413,7 +414,7 @@ $("login-button").addEventListener("click",async()=>{const error=$("login-error"
   if(authError)throw authError;
   if(!data.session?.access_token)throw new Error("ログインセッションを取得できませんでした。もう一度お試しください。");
   accessToken=data.session.access_token;currentUser=data.user;
-  const claims=decodeAdminClaims(),authTime=Number(claims?.auth_time),now=Math.floor(Date.now()/1000);
+  const claims=decodeAdminClaims(),authTime=getPasswordAuthTime(claims),now=Math.floor(Date.now()/1000);
   if(!Number.isFinite(authTime)||authTime>now+60||now-authTime>12*60*60)throw new Error("新しいログインセッションを確認できませんでした。ページを再読み込みして、もう一度ログインしてください。");
   await ensureRecentMfa();await enterApp(false);
  }catch(e){error.textContent=e?.message||"ログインできません。入力内容を確認してください。";}finally{button.disabled=false;}});
