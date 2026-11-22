@@ -20,6 +20,13 @@ function decodeClaims(token) {
     return null;
   }
 }
+function getPasswordAuthTime(claims) {
+  const timestamps = (Array.isArray(claims?.amr) ? claims.amr : [])
+    .filter(item => item?.method === "password")
+    .map(item => Number(item.timestamp))
+    .filter(Number.isFinite);
+  return timestamps.length ? Math.max(...timestamps) : NaN;
+}
 function bearer(req) {
   const value = req.headers.authorization || "";
   return value.startsWith("Bearer ") ? value.slice(7) : "";
@@ -45,7 +52,7 @@ async function authenticateAdmin(req, options = {}) {
   const claims = decodeClaims(token);
   if (!claims || claims.sub !== user.id || !claims.session_id) return null;
   if (options.requireMfa !== false && claims.aal !== "aal2") return null;
-  const authTime = Number(claims.auth_time);
+  const authTime = getPasswordAuthTime(claims);
   const now = Math.floor(Date.now() / 1000);
   // Absolute 12-hour admin session lifetime, independent of refresh-token renewal.
   if (!Number.isFinite(authTime) || authTime > now + 60 || now - authTime > 12 * 60 * 60) return null;
