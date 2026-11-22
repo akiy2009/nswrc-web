@@ -422,6 +422,7 @@ if(supabaseClient){
     }
   });
   (async()=>{
+    const loginButton=$("login-button");loginButton.disabled=true;
     try{
       const {data,error}=await supabaseClient.auth.getSession();
       if(error)throw error;
@@ -438,6 +439,8 @@ if(supabaseClient){
       accessToken=null;
       currentUser=null;
       $("login-error").textContent="保存されたログイン状態を確認できませんでした。もう一度ログインしてください。";
+    }finally{
+      loginButton.disabled=false;
     }
   })();
 }
