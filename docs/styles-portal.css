@@ -836,3 +836,96 @@
     animation-duration:.01ms!important;
   }
 }
+
+
+/* NSWRC operations workspace refinement — restrained, information-first UI */
+.ns-admin{
+  background:#f1f4f6;
+  color:#263b49;
+  font-variant-numeric:tabular-nums;
+}
+.ns-admin .ns-app{grid-template-columns:260px minmax(0,1fr)}
+.ns-admin .ns-sidebar{
+  width:260px;
+  padding:24px 17px 18px;
+  background:#142f43;
+  border-right:1px solid #0f2738;
+}
+.ns-admin .ns-side-brand{padding-bottom:25px;border-bottom:1px solid #2b4659}
+.ns-admin .ns-side-brand img{width:39px;height:39px}
+.ns-admin .ns-side-section-label{padding-top:19px;color:#a0b3c0;letter-spacing:.13em}
+.ns-admin .ns-side-link{
+  min-height:43px;
+  border-left:2px solid transparent;
+  border-color:transparent;
+  color:#d3dde4;
+  transition:background .12s,border-color .12s;
+}
+.ns-admin .ns-side-link:hover{background:#1b3b52}
+.ns-admin .ns-side-link.is-active{
+  border-color:#3b6b88;
+  border-left-color:#9ab6c8;
+  background:#203f55;
+}
+.ns-admin .ns-main-column{grid-column:2}
+.ns-admin .ns-topbar{
+  position:sticky;
+  top:0;
+  z-index:12;
+  height:70px;
+  border-bottom-color:#d4dde3;
+  box-shadow:0 1px 0 rgba(20,47,67,.025);
+}
+.ns-admin .ns-content{width:min(1500px,100%);padding-top:32px}
+.ns-admin .ns-page-heading{margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid #dce3e8}
+.ns-admin .ns-page-heading h1{font-size:29px;letter-spacing:-.025em}
+.ns-admin .ns-overline{color:#607d91;letter-spacing:.13em}
+.ns-admin .ns-metric-grid{gap:0;margin-bottom:18px;border:1px solid #d6dfe5;background:#fff}
+.ns-admin .ns-metric{
+  min-height:116px;
+  padding:18px 20px;
+  border:0;
+  border-right:1px solid #e1e7eb;
+  border-bottom:1px solid #e1e7eb;
+  background:#fff;
+}
+.ns-admin .ns-metric:last-child{border-right:0}
+.ns-admin .ns-metric-primary{padding-top:16px;border-top:3px solid #284f69}
+.ns-admin .ns-metric strong{margin:11px 0 5px;font-size:32px;color:#17384f}
+.ns-admin .ns-metric small{color:#7c8d98;font-size:10px}
+#view-overview .ns-metric-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ns-admin .ns-overview-grid{gap:12px;margin-bottom:12px}
+.ns-admin .ns-panel{border-color:#d6dfe5;box-shadow:none}
+.ns-admin .ns-panel-heading{padding:18px 21px;border-bottom-color:#e2e8ec}
+.ns-admin .ns-panel-heading h2{font-size:16px;letter-spacing:0}
+.ns-admin .ns-chart-track{background:#edf2f5}
+.ns-admin .ns-chart-track span{background:#587b93;transition:none}
+.ns-admin .ns-quick-link{padding:14px 20px}
+.ns-admin .ns-quick-link:hover,.ns-admin .ns-queue-row:hover{background:#f5f8fa}
+.ns-admin .ns-filter-bar{border-color:#d6dfe5;background:#fff}
+.ns-admin .ns-table-toolbar{padding:13px 16px;background:#f8fafb;border:1px solid #d6dfe5;border-bottom:0}
+.ns-admin .ns-table-wrap{border-color:#d6dfe5;background:#fff}
+.ns-admin .ns-table thead th{background:#edf2f5;color:#29475b;font-weight:750}
+.ns-admin .ns-table tbody tr:hover{background:#f8fafb}
+.ns-admin .ns-pagination{padding-top:13px}
+.ns-admin .ns-primary-button{background:#1d4058;border-color:#1d4058}
+.ns-admin .ns-primary-button:hover{background:#2b5b78;border-color:#2b5b78}
+.ns-admin .ns-outline-button{border-color:#c6d2da;color:#294b62}
+.ns-admin .ns-status{border-radius:2px}
+.ns-admin .ns-footer{border-top:1px solid #dce3e8;background:#f7f9fa}
+@media(max-width:1100px){
+  .ns-admin .ns-app{grid-template-columns:230px minmax(0,1fr)}
+  .ns-admin .ns-sidebar{width:230px}
+}
+@media(max-width:800px){
+  .ns-admin .ns-app{display:block}
+  .ns-admin .ns-sidebar{width:100%;border-right:0}
+  .ns-admin .ns-topbar{position:sticky;height:auto;min-height:66px}
+  .ns-admin .ns-content{padding-top:25px}
+  #view-overview .ns-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .ns-admin .ns-page-heading h1{font-size:25px}
+  .ns-admin .ns-metric{min-height:108px;padding:14px}
+  .ns-admin .ns-metric strong{font-size:28px}
+}
