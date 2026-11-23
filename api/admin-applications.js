@@ -1,7 +1,7 @@
 const {encrypt,decryptRow}=require("./_lib/pii");
 const {authenticateAdmin,consumeRateLimit,audit}=require("./_lib/admin-security");
 const base=()=>process.env.SUPABASE_URL?.replace(/\/$/,"");
-const allowedOrigins=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io,https://nswrc-membership.vercel.app").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
+const allowedOrigins=()=>((process.env.ALLOWED_ORIGINS||"https://akiy2009.github.io,https://nswrc-membership.vercel.app,https://www.nswrc.jp,https://nswrc.jp").split(",").map(x=>x.trim().replace(/\/$/,"")).filter(Boolean));
 function send(res,status,data){res.status(status).setHeader("Content-Type","application/json; charset=utf-8").setHeader("Cache-Control","no-store").json(data);}
 function cors(req,res){
  const origin=req.headers.origin;
