@@ -1,6 +1,6 @@
 const { authenticateAdmin, consumeRateLimit, audit, json, serviceHeaders } = require("./_lib/admin-security");
 const base = () => process.env.SUPABASE_URL?.replace(/\/$/, "");
-const allowedOrigins = () => (process.env.ALLOWED_ORIGINS || "https://akiy2009.github.io,https://nswrc-membership.vercel.app").split(",").map(x => x.trim().replace(/\/$/, "")).filter(Boolean);
+const allowedOrigins = () => (process.env.ALLOWED_ORIGINS || "https://akiy2009.github.io,https://nswrc-membership.vercel.app,https://www.nswrc.jp,https://nswrc.jp").split(",").map(x => x.trim().replace(/\/$/, "")).filter(Boolean);
 module.exports = async function handler(req, res) {
   const origin = req.headers.origin;
   if (origin && !allowedOrigins().includes(origin.replace(/\/$/, ""))) return json(res, 403, { error: "この送信元からのアクセスは許可されていません。" });
