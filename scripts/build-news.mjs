@@ -12,15 +12,145 @@ function escapeAttribute(value) {
   })[char]);
 }
 
-function renderArticle(item) {
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
+function renderInline(value) {
+  return escapeHtml(value)
+    .replace(/\\[([^\\]]+)\\]\\(((?:https?:\\/\\/|mailto:|tel:|\\/|\\.{1,2}\\/|#)[^\\s)]+)\\)/g, (_, label, href) => {
+      const external = /^https?:\\/\\//i.test(href);
+      return `<a href="${escapeAttribute(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}</a>`;
+    })
+    .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')
+    .replace(/\\*(.+?)\\*/g, '<em>$1</em>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    .replace(/\\x60([^\\x60]+)\\x60/g, '<code>$1</code>');
+}
+
+function renderMarkdown(source) {
+  let html = '';
+  let paragraph = [];
+  let list = '';
+  let inCode = false;
+  let codeLines = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    html += '<p>' + renderInline(paragraph.join('\\n')).replace(/\\n/g, '<br>') + '</p>';
+    paragraph = [];
+  };
+  const closeList = () => {
+    if (!list) return;
+    html += `</${list}>`;
+    list = '';
+  };
+
+  for (const line of String(source || '').split(/\\r?\\n/)) {
+    if (line.trim().startsWith('```')) {
+      if (!inCode) {
+        flushParagraph();
+        closeList();
+        inCode = true;
+        codeLines = [];
+      } else {
+        html += '<pre><code>' + escapeHtml(codeLines.join('\\n')) + '</code></pre>';
+        inCode = false;
+      }
+      continue;
+    }
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+
+    let match;
+    if (!line.trim()) {
+      flushParagraph();
+      closeList();
+      continue;
+    }
+    if ((match = line.match(/^(#{1,3})\\s+(.+)$/))) {
+      flushParagraph();
+      closeList();
+      const level = match[1].length + 1;
+      html += `<h${level}>${renderInline(match[2])}</h${level}>`;
+      continue;
+    }
+    if ((match = line.match(/^[-*+]\\s+(.+)$/))) {
+      flushParagraph();
+      if (list !== 'ul') {
+        closeList();
+        html += '<ul>';
+        list = 'ul';
+      }
+      html += '<li>' + renderInline(match[1]) + '</li>';
+      continue;
+    }
+    if ((match = line.match(/^\\d+\\.\\s+(.+)$/))) {
+      flushParagraph();
+      if (list !== 'ol') {
+        closeList();
+        html += '<ol>';
+        list = 'ol';
+      }
+      html += '<li>' + renderInline(match[1]) + '</li>';
+      continue;
+    }
+    if ((match = line.match(/^>\\s?(.*)$/))) {
+      flushParagraph();
+      closeList();
+      html += '<blockquote>' + renderInline(match[1]) + '</blockquote>';
+      continue;
+    }
+    if (/^---+$/.test(line.trim())) {
+      flushParagraph();
+      closeList();
+      html += '<hr>';
+      continue;
+    }
+    closeList();
+    paragraph.push(line);
+  }
+
+  if (inCode) html += '<pre><code>' + escapeHtml(codeLines.join('\\n')) + '</code></pre>';
+  flushParagraph();
+  closeList();
+  return html;
+}
+
+function renderPagination(items, index) {
+  const links = [];
+  if (items[index + 1]) {
+    const previous = items[index + 1];
+    links.push(`<a href="${escapeAttribute(previous.slug)}.html">‹ 前の記事　${escapeHtml(previous.title)}</a>`);
+  }
+  if (items[index - 1]) {
+    const next = items[index - 1];
+    links.push(`<a href="${escapeAttribute(next.slug)}.html">次の記事　${escapeHtml(next.title)} ›</a>`);
+  }
+  return links.length ? `<nav class="article-pagination" aria-label="前後のお知らせ">${links.join('')}</nav>` : '';
+}
+
+function renderArticle(item, index, items) {
   const title = item.title + ' | 全国学生無線通信研究会';
   const url = `${siteOrigin}/news/${item.slug}.html`;
+  const meta = `<div class="article-meta"><time datetime="${escapeAttribute(item.date)}">${escapeHtml(item.date)}</time><span class="notice-category">${escapeHtml(item.category || 'お知らせ')}</span></div>`;
+  const back = '<a class="article-back" href="../news.html">← お知らせ一覧へ戻る</a>';
   return template
     .replaceAll('__PAGE_TITLE__', escapeAttribute(title))
     .replaceAll('__OG_TITLE__', escapeAttribute(title))
     .replaceAll('__OG_DESCRIPTION__', escapeAttribute(item.summary))
     .replaceAll('__OG_URL__', escapeAttribute(url))
-    .replaceAll('__OG_DATE__', escapeAttribute(item.date));
+    .replaceAll('__OG_DATE__', escapeAttribute(item.date))
+    .replaceAll('__ARTICLE_META__', meta)
+    .replaceAll('__ARTICLE_TITLE__', escapeHtml(item.title))
+    .replaceAll('__ARTICLE_SUMMARY__', escapeHtml(item.summary))
+    .replaceAll('__ARTICLE_BODY__', renderMarkdown(item.body))
+    .replaceAll('__ARTICLE_PAGINATION__', renderPagination(items, index))
+    .replaceAll('__ARTICLE_BACK__', back);
 }
 function parseFrontmatter(source, file) {
   const match = source.replace(/^\uFEFF/, '').match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*(?:\r?\n|$)([\s\S]*)$/);
@@ -90,7 +220,7 @@ for (const item of items) {
   for (const base of ['news', 'docs/news']) {
     const target = resolve(root, base, item.slug + '.html');
     await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, renderArticle(item), 'utf8');
+    await writeFile(target, renderArticle(item, items.indexOf(item), items), 'utf8');
     console.log('Generated ' + target);
   }
 }
