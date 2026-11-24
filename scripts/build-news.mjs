@@ -22,7 +22,7 @@ function renderInline(value) {
   return escapeHtml(value)
     .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:|tel:|\/|\.{1,2}\/|#)[^\s)]+)\)/g, (_, label, href) => {
       const external = /^https?:\/\//i.test(href);
-      return `<a href="${escapeAttribute(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}</a>`;
+      return `<a href="${href}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}</a>`;
     })
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
