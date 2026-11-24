@@ -1,6 +1,6 @@
 # National Student Wireless Research Club（NSWRC）公式サイト
 
-GitHub Pages で公開する静的サイトです。日本語の正式名称は「全国学生無線通信研究会」、英語名称は **National Student Wireless Research Club**、略称は **NSWRC** です。
+Vercel の `https://www.nswrc.jp/` で公開する静的サイトです。日本語の正式名称は「全国学生無線通信研究会」、英語名称は **National Student Wireless Research Club**、略称は **NSWRC** です。
 
 ## ページ構成
 
@@ -39,10 +39,12 @@ summary: 全国の学生無線家が集まり、活動や技術について交�
 詳細は[こちら](https://example.org)をご覧ください。
 ```
 
-3. リポジトリのルートで `node scripts/build-news.mjs` を実行します。
-4. 生成・更新された `news-data.json`、`docs/news-data.json`、記事HTMLを含めてコミットします。
+3. MarkdownファイルをGitHubへ push します。
+4. GitHub Actions が自動で `news-data.json` と記事ページを生成し、生成物をコミットします。そのコミットがVercelの本番デプロイにつながります。
 
-**次回からはMarkdownファイルを追加・編集するだけ。** ビルドスクリプトが日付順の一覧データと個別記事ページを自動生成し、トップページの最新3件にも反映します。記事を削除する場合は元のMarkdownを削除して再ビルドしてください。
+ローカルで確認したい場合は、リポジトリのルートで `node scripts/build-news.mjs` を実行できます。
+
+**次回からは `content/news/*.md` だけを追加・編集すればOKです。** GitHub Actions が日付順の一覧データと個別記事ページを自動生成し、トップページの最新のお知らせにも反映します。記事を削除する場合は元のMarkdownを削除して push してください。
 
 ### メタデータ
 
@@ -62,7 +64,11 @@ summary: 全国の学生無線家が集まり、活動や技術について交�
 
 ## GitHub Pages
 
-GitHub Pages の公開元を `main` ブランチの `/docs` に設定する運用です。ビルド後は `docs/` 側の生成物が公開対象になります。ルート側も同じ内容に保ってください。
+本番公開はVercelの `www.nswrc.jp` です。`docs/` 側にも互換用の生成物を出力し、ルート側と同じ内容を保ちます。
+
+### 編集する場所について
+
+Markdown化の対象は、お知らせ記事の本文・タイトル・概要です。トップページ、入会申込、管理者ポータルなど、フォームや認証・画面操作を持つページは既存のHTML/JavaScriptを維持し、現在の動作を壊さない構成にしています。
 
 ## お問い合わせフォーム
 
