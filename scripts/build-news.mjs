@@ -1,9 +1,10 @@
-import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises';
+import { readdir, readFile, mkdir, writeFile, unlink } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 const root = process.cwd();
 const contentDir = resolve(root, 'content/news');
 const template = await readFile(resolve(root, 'templates/news-article.html'), 'utf8');
+const siteOrigin = 'https://www.nswrc.jp';
 
 function escapeAttribute(value) {
   return String(value).replace(/[&<>\"']/g, char => ({
@@ -13,7 +14,7 @@ function escapeAttribute(value) {
 
 function renderArticle(item) {
   const title = item.title + ' | 全国学生無線通信研究会';
-  const url = 'https://akiy2009.github.io/nswrc-web/news/' + item.slug + '.html';
+  const url = `${siteOrigin}/news/${item.slug}.html`;
   return template
     .replaceAll('__PAGE_TITLE__', escapeAttribute(title))
     .replaceAll('__OG_TITLE__', escapeAttribute(title))
@@ -57,7 +58,8 @@ function parseFrontmatter(source, file) {
 
 let files = [];
 try { files = (await readdir(contentDir)).filter(name => name.endsWith('.md') && !name.startsWith('_')).sort(); }
-catch (error) { if (error.code !== 'ENOENT') throw error; }
+catch (error) { if (error.code !== 'ENOENT') throw error; throw new Error('content/news directory is missing. Add Markdown source files before building.'); }
+if (!files.length) throw new Error('No Markdown articles found in content/news. Refusing to overwrite published news with an empty list.');
 
 const items = [];
 const seen = new Set();
@@ -73,6 +75,16 @@ for (const target of ['news-data.json', 'docs/news-data.json']) {
   await mkdir(dirname(resolve(root, target)), { recursive: true });
   await writeFile(resolve(root, target), json, 'utf8');
   console.log('Generated ' + target);
+}
+for (const base of ['news', 'docs/news']) {
+  await mkdir(resolve(root, base), { recursive: true });
+  const expected = new Set(items.map(item => item.slug + '.html'));
+  for (const entry of await readdir(resolve(root, base), { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith('.html') && !expected.has(entry.name)) {
+      await unlink(resolve(root, base, entry.name));
+      console.log('Removed stale article ' + resolve(root, base, entry.name));
+    }
+  }
 }
 for (const item of items) {
   for (const base of ['news', 'docs/news']) {
