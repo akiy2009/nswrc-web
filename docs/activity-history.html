@@ -14,26 +14,36 @@
 <body class="activity-history-page"><a class="skip-link" href="#main">本文へ移動</a><header class="header"><div class="container header-inner"><a class="brand" href="index.html"><img class="brand-logo" src="assets/nswrc-logo.svg" alt=""><span class="brand-copy"><span class="brand-name">全国学生無線通信研究会</span><span class="brand-en">NATIONAL STUDENT WIRELESS RESEARCH CLUB</span></span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="global-nav" aria-label="メニューを開く"><span></span><span></span></button><nav class="nav" id="global-nav"><a href="index.html#about">研究会について</a><a href="index.html#activities">活動内容</a><a href="activity-history.html" aria-current="page">活動実績</a><a href="join.html">参加・入会案内</a><a href="news.html">お知らせ</a><a href="contact.html">お問い合わせ</a></nav></div></header>
 <main id="main"><div class="breadcrumb"><div class="container"><a href="index.html">トップ</a>　/　活動実績</div></div><section class="page-hero"><div class="container"><p class="eyebrow">ACTIVITY HISTORY</p><h1>活動実績</h1><p>全国学生無線通信研究会のイベント参加、記念局運用、交流・技術活動の記録を紹介します。</p></div></section>
 <section class="page-content"><div class="container">
-<div class="activity-history-intro"><p>研究会の活動を、開催日順に紹介しています。</p><span>ACTIVITY ARCHIVE / 2026—</span></div>
-<div class="activity-history-list">
-<!-- 活動実績を追加する場合は、以下の article を複製し、日付の新しい順に追加してください。 -->
-<article class="history-entry">
-  <div class="history-date">
-    <span class="history-date-year">2026</span>
-    <time datetime="2026-08-22">08.22</time>
-    <span class="history-date-kind">EVENT</span>
+<section class="history-explorer" aria-label="活動実績の検索">
+  <div class="history-explorer-heading"><div><p class="history-kicker">FIND AN ACTIVITY</p><h2>活動を探す</h2><p>キーワード・活動分野・開催年から絞り込めます。</p></div><p class="history-total"><strong id="history-result-count" aria-live="polite">1</strong><span>件の活動</span></p></div>
+  <div class="history-search-row">
+    <label class="history-search-box"><span class="sr-only">キーワードで検索</span><span aria-hidden="true">⌕</span><input id="history-search" type="search" placeholder="イベント名・開催内容・コールサインで検索" autocomplete="off"></label>
+    <label class="history-year-select"><span class="sr-only">開催年で絞り込む</span><select id="history-year"><option value="all">すべての開催年</option></select></label>
   </div>
-  <div class="history-body">
-    <p class="history-category">イベント参加・記念局</p>
-    <h2>高専カンファレンス無線通信 IN 大阪</h2>
-    <p class="history-summary">2026年8月22日、「高専カンファレンス無線通信 IN 大阪」に、全国学生無線通信研究会の記念局 <strong>8J3WLCF</strong> として参加しました。</p>
-    <dl class="history-details">
-      <div><dt>参加形態</dt><dd>全国学生無線通信研究会 記念局</dd></div>
-      <div><dt>コールサイン</dt><dd><strong>8J3WLCF</strong></dd></div>
-    </dl>
-  </div>
-</article>
+  <div class="history-filter-area"><span class="history-filter-label">活動分野</span><div class="history-filter-chips" role="group" aria-label="活動分野で絞り込む">
+    <button class="history-filter-chip is-active" type="button" data-category="all" aria-pressed="true">すべて</button>
+    <button class="history-filter-chip" type="button" data-category="event" aria-pressed="false">イベント・交流</button>
+    <button class="history-filter-chip" type="button" data-category="radio" aria-pressed="false">記念局・無線運用</button>
+    <button class="history-filter-chip" type="button" data-category="technical" aria-pressed="false">技術・研究</button>
+    <button class="history-filter-chip" type="button" data-category="management" aria-pressed="false">運営・企画</button>
+  </div></div>
+  <div class="history-result-meta"><span id="history-result-label">すべての活動を表示しています</span><button id="history-reset" type="button">条件をリセット <span aria-hidden="true">↺</span></button></div>
+</section>
+<div class="activity-history-list" id="activity-history-list">
+  <section class="history-year-group" data-year-group="2026" aria-labelledby="history-year-2026">
+    <div class="history-year-heading"><h2 id="history-year-2026">2026</h2><span>ACTIVITY LOG</span></div>
+    <article class="history-entry" data-year="2026" data-categories="event radio" data-search="高専カンファレンス無線通信 IN 大阪 2026年8月22日 イベント参加 記念局 8J3WLCF 全国学生無線通信研究会">
+      <div class="history-date"><span class="history-date-year">2026</span><time datetime="2026-08-22">08.22</time><span class="history-date-kind">EVENT</span></div>
+      <div class="history-body">
+        <div class="history-card-top"><p class="history-category">イベント・交流</p><span class="history-secondary-tag">記念局・無線運用</span></div>
+        <h3>高専カンファレンス無線通信 IN 大阪</h3>
+        <p class="history-summary">2026年8月22日、「高専カンファレンス無線通信 IN 大阪」に、全国学生無線通信研究会の記念局 <strong>8J3WLCF</strong> として参加しました。</p>
+        <dl class="history-details"><div><dt>参加形態</dt><dd>全国学生無線通信研究会 記念局</dd></div><div><dt>コールサイン</dt><dd><strong>8J3WLCF</strong></dd></div></dl>
+      </div>
+    </article>
+  </section>
 </div>
+<div class="history-empty" id="history-empty" hidden><span class="history-empty-mark">⌕</span><h3>該当する活動がありません</h3><p>キーワードや絞り込み条件を変更して、もう一度お試しください。</p><button type="button" id="history-empty-reset">すべての活動を表示</button></div>
 <div class="activity-history-note"><strong>活動実績の掲載について</strong><p>掲載内容に誤りがある場合や、関連する活動情報をお持ちの場合は、お問い合わせフォームからお知らせください。</p><a href="contact.html">活動情報を提供する　›</a></div>
 </div></section></main>
 <footer class="footer">
@@ -44,4 +54,51 @@
     </nav>
   </div>
   <div class="container footer-bottom"><span>© 全国学生無線通信研究会</span><a href="#main">ページ上部へ ↑</a></div>
-</footer><script>const b=document.querySelector(".menu-toggle"),n=document.querySelector(".nav");b.addEventListener("click",()=>{const o=b.getAttribute("aria-expanded")==="true";b.setAttribute("aria-expanded",String(!o));n.classList.toggle("is-open",!o);});</script></body></html>
+</footer><script>
+(()=> {
+ const root=document.querySelector(".activity-history-page");
+ if(!root)return;
+ const cards=[...root.querySelectorAll(".history-entry")];
+ const groups=[...root.querySelectorAll(".history-year-group")];
+ const search=root.querySelector("#history-search");
+ const year=root.querySelector("#history-year");
+ const count=root.querySelector("#history-result-count");
+ const label=root.querySelector("#history-result-label");
+ const empty=root.querySelector("#history-empty");
+ const reset=root.querySelector("#history-reset");
+ const emptyReset=root.querySelector("#history-empty-reset");
+ const chips=[...root.querySelectorAll(".history-filter-chip")];
+ let category="all";
+ [...new Set(cards.map(card=>card.dataset.year))].sort((a,b)=>b.localeCompare(a)).forEach(value=>{
+   const option=document.createElement("option");option.value=value;option.textContent=value+"年";year.append(option);
+ });
+ const normalize=value=>value.toLocaleLowerCase("ja").normalize("NFKC").replace(/[\s　]+/g,"");
+ function filter(){
+   const keyword=normalize(search.value.trim()),selectedYear=year.value;
+   let visible=0;
+   cards.forEach(card=>{
+     const matchesKeyword=!keyword||normalize(card.dataset.search+" "+card.textContent).includes(keyword);
+     const matchesYear=selectedYear==="all"||card.dataset.year===selectedYear;
+     const matchesCategory=category==="all"||card.dataset.categories.split(/\s+/).includes(category);
+     const show=matchesKeyword&&matchesYear&&matchesCategory;
+     card.hidden=!show;if(show)visible++;
+   });
+   groups.forEach(group=>{group.hidden=!group.querySelector(".history-entry:not([hidden])");});
+   count.textContent=String(visible);
+   empty.hidden=visible!==0;
+   const filters=[];
+   if(keyword)filters.push("「"+search.value.trim()+"」");
+   if(selectedYear!=="all")filters.push(selectedYear+"年");
+   if(category!=="all")filters.push(chips.find(chip=>chip.dataset.category===category)?.textContent.trim()||"");
+   label.textContent=filters.length?filters.join(" / ")+" で絞り込み中":"すべての活動を表示しています";
+ }
+ chips.forEach(chip=>chip.addEventListener("click",()=>{
+   category=chip.dataset.category;
+   chips.forEach(item=>{const active=item===chip;item.classList.toggle("is-active",active);item.setAttribute("aria-pressed",String(active));});
+   filter();
+ }));
+ search.addEventListener("input",filter);year.addEventListener("change",filter);
+ function clear(){search.value="";year.value="all";category="all";chips.forEach(chip=>{const active=chip.dataset.category==="all";chip.classList.toggle("is-active",active);chip.setAttribute("aria-pressed",String(active));});filter();search.focus();}
+ reset.addEventListener("click",clear);emptyReset.addEventListener("click",clear);filter();
+})();
+</script><script>const b=document.querySelector(".menu-toggle"),n=document.querySelector(".nav");b.addEventListener("click",()=>{const o=b.getAttribute("aria-expanded")==="true";b.setAttribute("aria-expanded",String(!o));n.classList.toggle("is-open",!o);});</script></body></html>
