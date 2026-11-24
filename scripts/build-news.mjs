@@ -20,14 +20,14 @@ function escapeHtml(value) {
 
 function renderInline(value) {
   return escapeHtml(value)
-    .replace(/\\[([^\\]]+)\\]\\(((?:https?:\\/\\/|mailto:|tel:|\\/|\\.{1,2}\\/|#)[^\\s)]+)\\)/g, (_, label, href) => {
-      const external = /^https?:\\/\\//i.test(href);
+    .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:|tel:|\/|\.{1,2}\/|#)[^\s)]+)\)/g, (_, label, href) => {
+      const external = /^https?:\/\//i.test(href);
       return `<a href="${escapeAttribute(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}</a>`;
     })
-    .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')
-    .replace(/\\*(.+?)\\*/g, '<em>$1</em>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/~~(.+?)~~/g, '<del>$1</del>')
-    .replace(/\\x60([^\\x60]+)\\x60/g, '<code>$1</code>');
+    .replace(/\x60([^\x60]+)\x60/g, '<code>$1</code>');
 }
 
 function renderMarkdown(source) {
@@ -39,7 +39,7 @@ function renderMarkdown(source) {
 
   const flushParagraph = () => {
     if (!paragraph.length) return;
-    html += '<p>' + renderInline(paragraph.join('\\n')).replace(/\\n/g, '<br>') + '</p>';
+    html += '<p>' + renderInline(paragraph.join('\n')).replace(/\n/g, '<br>') + '</p>';
     paragraph = [];
   };
   const closeList = () => {
@@ -48,7 +48,7 @@ function renderMarkdown(source) {
     list = '';
   };
 
-  for (const line of String(source || '').split(/\\r?\\n/)) {
+  for (const line of String(source || '').split(/\r?\n/)) {
     if (line.trim().startsWith('```')) {
       if (!inCode) {
         flushParagraph();
@@ -56,7 +56,7 @@ function renderMarkdown(source) {
         inCode = true;
         codeLines = [];
       } else {
-        html += '<pre><code>' + escapeHtml(codeLines.join('\\n')) + '</code></pre>';
+        html += '<pre><code>' + escapeHtml(codeLines.join('\n')) + '</code></pre>';
         inCode = false;
       }
       continue;
@@ -72,14 +72,14 @@ function renderMarkdown(source) {
       closeList();
       continue;
     }
-    if ((match = line.match(/^(#{1,3})\\s+(.+)$/))) {
+    if ((match = line.match(/^(#{1,3})\s+(.+)$/))) {
       flushParagraph();
       closeList();
       const level = match[1].length + 1;
       html += `<h${level}>${renderInline(match[2])}</h${level}>`;
       continue;
     }
-    if ((match = line.match(/^[-*+]\\s+(.+)$/))) {
+    if ((match = line.match(/^[-*+]\s+(.+)$/))) {
       flushParagraph();
       if (list !== 'ul') {
         closeList();
@@ -89,7 +89,7 @@ function renderMarkdown(source) {
       html += '<li>' + renderInline(match[1]) + '</li>';
       continue;
     }
-    if ((match = line.match(/^\\d+\\.\\s+(.+)$/))) {
+    if ((match = line.match(/^\d+\.\s+(.+)$/))) {
       flushParagraph();
       if (list !== 'ol') {
         closeList();
@@ -99,7 +99,7 @@ function renderMarkdown(source) {
       html += '<li>' + renderInline(match[1]) + '</li>';
       continue;
     }
-    if ((match = line.match(/^>\\s?(.*)$/))) {
+    if ((match = line.match(/^>\s?(.*)$/))) {
       flushParagraph();
       closeList();
       html += '<blockquote>' + renderInline(match[1]) + '</blockquote>';
@@ -115,7 +115,7 @@ function renderMarkdown(source) {
     paragraph.push(line);
   }
 
-  if (inCode) html += '<pre><code>' + escapeHtml(codeLines.join('\\n')) + '</code></pre>';
+  if (inCode) html += '<pre><code>' + escapeHtml(codeLines.join('\n')) + '</code></pre>';
   flushParagraph();
   closeList();
   return html;
