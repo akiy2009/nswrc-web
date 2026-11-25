@@ -321,12 +321,19 @@ async function ensureRecentMfa(){
   if(listed.error)throw listed.error;
   let factor=(listed.data.totp||[]).find(x=>x.status==="verified"),qr="",secret="";
   if(!factor){
-    factor=(listed.data.totp||[]).find(x=>x.status==="unverified");
-    if(!factor){
-      const enrolled=await supabaseClient.auth.mfa.enroll({factorType:"totp",friendlyName:"NSWRC Admin"});
-      if(enrolled.error)throw enrolled.error;
-      factor={id:enrolled.data.id};qr=enrolled.data.totp.qr_code;secret=enrolled.data.totp.secret;
+    // An unverified factor does not expose its original QR/secret again.
+    // Remove only incomplete enrollments, then create a fresh enrollment
+    // so the first-time login can display a new QR code.
+    const unverifiedFactors=(listed.data.totp||[]).filter(x=>x.status==="unverified");
+    for(const oldFactor of unverifiedFactors){
+      const removed=await supabaseClient.auth.mfa.unenroll({factorId:oldFactor.id});
+      if(removed.error)throw removed.error;
     }
+    const enrolled=await supabaseClient.auth.mfa.enroll({factorType:"totp",friendlyName:"NSWRC Admin"});
+    if(enrolled.error)throw enrolled.error;
+    factor={id:enrolled.data.id};
+    qr=enrolled.data.totp.qr_code;
+    secret=enrolled.data.totp.secret;
   }
   const challenge=await supabaseClient.auth.mfa.challenge({factorId:factor.id});
   if(challenge.error)throw challenge.error;
