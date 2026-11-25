@@ -308,55 +308,69 @@ let licenseNumberLoaded=false;
 function decodeAdminClaims(){try{const part=accessToken.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");return JSON.parse(atob(part.padEnd(Math.ceil(part.length/4)*4,"=")));}catch{return null;}}
 function getPasswordAuthTime(claims){const timestamps=(Array.isArray(claims?.amr)?claims.amr:[]).filter(x=>x?.method==="password").map(x=>Number(x.timestamp)).filter(Number.isFinite);return timestamps.length?Math.max(...timestamps):NaN;}
 function requestMfaCode({qr,secret}){return new Promise(resolve=>{const dialog=$("mfa-dialog"),area=$("mfa-enroll-area"),button=$("mfa-verify"),code=$("mfa-code"),error=$("mfa-error");area.hidden=!qr;if(qr){$("mfa-qr").src=qr;$("mfa-secret").textContent=secret||"";$("mfa-dialog-message").textContent="認証アプリでQRコードを読み取り、登録後に表示された6桁のコードを入力してください。";}else{$("mfa-dialog-message").textContent="認証アプリに表示された6桁のコードを入力してください。";}code.value="";error.textContent="";const finish=value=>{button.removeEventListener("click",submit);dialog.removeEventListener("close",cancel);dialog.close();resolve(value);};const submit=()=>{const value=code.value.trim();if(!/^[0-9]{6}$/.test(value)){error.textContent="6桁の数字を入力してください。";return;}finish(value);};const cancel=()=>finish(null);button.addEventListener("click",submit);dialog.addEventListener("close",cancel,{once:true});dialog.showModal();code.focus();});}
+let ensureRecentMfaPromise=null;
 async function ensureRecentMfa(){
-  if(!supabaseClient||!accessToken)throw new Error("管理者セッションを確認できません。");
-  const initialClaims=decodeAdminClaims(),now=Math.floor(Date.now()/1000);
-  const authTime=getPasswordAuthTime(initialClaims);
-  if(!Number.isFinite(authTime)||authTime>now+60||now-authTime>12*60*60){
-    throw new Error("管理者セッションの有効期限が切れています。いったんログアウトし、メールアドレスとパスワードからログインし直してください。");
-  }
-  const isRecent=claims=>claims?.aal==="aal2"&&Array.isArray(claims.amr)&&claims.amr.some(x=>x?.method==="totp"&&Number.isFinite(Number(x.timestamp))&&now-Number(x.timestamp)>=0&&now-Number(x.timestamp)<=300);
-  if(isRecent(initialClaims))return;
-  const listed=await supabaseClient.auth.mfa.listFactors();
-  if(listed.error)throw listed.error;
-  let factor=(listed.data.totp||[]).find(x=>x.status==="verified"),qr="",secret="";
-  if(!factor){
-    // An unverified factor does not expose its original QR/secret again.
-    // Remove only incomplete enrollments, then create a fresh enrollment
-    // so the first-time login can display a new QR code.
-    const unverifiedFactors=(listed.data.totp||[]).filter(x=>x.status==="unverified");
-    for(const oldFactor of unverifiedFactors){
-      const removed=await supabaseClient.auth.mfa.unenroll({factorId:oldFactor.id});
-      if(removed.error)throw removed.error;
+  // Login restoration and the explicit login flow can converge on this check.
+  // Share one in-flight enrollment/challenge to avoid duplicate TOTP factors.
+  if(ensureRecentMfaPromise)return ensureRecentMfaPromise;
+  ensureRecentMfaPromise=(async()=>{
+    if(!supabaseClient||!accessToken)throw new Error("管理者セッションを確認できません。");
+    const initialClaims=decodeAdminClaims(),now=Math.floor(Date.now()/1000);
+    const authTime=getPasswordAuthTime(initialClaims);
+    if(!Number.isFinite(authTime)||authTime>now+60||now-authTime>12*60*60){
+      throw new Error("管理者セッションの有効期限が切れています。いったんログアウトし、メールアドレスとパスワードからログインし直してください。");
     }
-    const enrolled=await supabaseClient.auth.mfa.enroll({factorType:"totp",friendlyName:"NSWRC Admin"});
-    if(enrolled.error)throw enrolled.error;
-    factor={id:enrolled.data.id};
-    qr=enrolled.data.totp.qr_code;
-    secret=enrolled.data.totp.secret;
-  }
-  const challenge=await supabaseClient.auth.mfa.challenge({factorId:factor.id});
-  if(challenge.error)throw challenge.error;
-  const code=await requestMfaCode({qr,secret});
-  if(!code)throw new Error("追加認証をキャンセルしました。");
-  const verified=await supabaseClient.auth.mfa.verify({factorId:factor.id,challengeId:challenge.data.id,code});
-  if(verified.error)throw new Error("認証コードを確認できませんでした。認証アプリの時刻設定を確認して、もう一度お試しください。");
-  // Use the session returned by MFA verify itself. getSession() can still expose
-  // the pre-challenge snapshot while the auth-state event is being processed.
-  const verifiedData=verified.data;
-  if(!verifiedData?.access_token)throw new Error("追加認証は成功しましたが、新しい管理者トークンを取得できません。もう一度ログインしてください。");
-  accessToken=verifiedData.access_token;
-  currentUser=verifiedData.user||currentUser;
-  const updated=decodeAdminClaims();
-  if(updated?.aal!=="aal2"||!updated?.session_id||!updated?.sub)throw new Error("追加認証後の認証情報が不完全です。ログアウトして再度ログインしてください。");
-  const verifiedAuthTime=getPasswordAuthTime(updated);
-  if(!Number.isFinite(verifiedAuthTime)||verifiedAuthTime>now+60||now-verifiedAuthTime>12*60*60)throw new Error("管理者セッションの有効期限が切れています。ログアウトして再度ログインしてください。");
-  // Confirm that this exact token still resolves to the signed-in admin account.
-  const userResponse=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+accessToken},cache:"no-store"});
-  if(!userResponse.ok)throw new Error("追加認証後の管理者アカウントを確認できません。ログアウトして再度ログインしてください。");
-  const verifiedUser=await userResponse.json();
-  if(verifiedUser.id!==updated.sub||verifiedUser.app_metadata?.role!=="admin")throw new Error("このアカウントに管理者権限がありません。管理担当者に確認してください。");
-  currentUser=verifiedUser;
+    const isRecent=claims=>claims?.aal==="aal2"&&Array.isArray(claims.amr)&&claims.amr.some(x=>x?.method==="totp"&&Number.isFinite(Number(x.timestamp))&&now-Number(x.timestamp)>=0&&now-Number(x.timestamp)<=300);
+    if(isRecent(initialClaims))return;
+    const listed=await supabaseClient.auth.mfa.listFactors();
+    if(listed.error)throw listed.error;
+    let factor=(listed.data.totp||[]).find(x=>x.status==="verified"),qr="",secret="";
+    if(!factor){
+      // An unverified factor cannot reveal its original QR/secret again.
+      // Remove incomplete enrollments before starting a fresh enrollment.
+      const removeUnverified=async()=>{
+        const fresh=await supabaseClient.auth.mfa.listFactors();
+        if(fresh.error)throw fresh.error;
+        for(const oldFactor of (fresh.data.totp||[]).filter(x=>x.status==="unverified")){
+          const removed=await supabaseClient.auth.mfa.unenroll({factorId:oldFactor.id});
+          if(removed.error)throw removed.error;
+        }
+      };
+      await removeUnverified();
+      let enrolled=await supabaseClient.auth.mfa.enroll({factorType:"totp",friendlyName:"NSWRC Admin"});
+      // GoTrue may still report the friendly name as occupied briefly after an
+      // interrupted enrollment. Retry with a unique label rather than trapping
+      // the administrator in a permanent first-enrollment error.
+      if(enrolled.error&&/friendly name/i.test(enrolled.error.message||"")){
+        await removeUnverified();
+        enrolled=await supabaseClient.auth.mfa.enroll({factorType:"totp",friendlyName:"NSWRC Admin "+Date.now()});
+      }
+      if(enrolled.error)throw enrolled.error;
+      factor={id:enrolled.data.id};
+      qr=enrolled.data.totp.qr_code;
+      secret=enrolled.data.totp.secret;
+    }
+    const challenge=await supabaseClient.auth.mfa.challenge({factorId:factor.id});
+    if(challenge.error)throw challenge.error;
+    const code=await requestMfaCode({qr,secret});
+    if(!code)throw new Error("追加認証をキャンセルしました。");
+    const verified=await supabaseClient.auth.mfa.verify({factorId:factor.id,challengeId:challenge.data.id,code});
+    if(verified.error)throw new Error("認証コードを確認できませんでした。認証アプリの時刻設定を確認して、もう一度お試しください。");
+    const verifiedData=verified.data;
+    if(!verifiedData?.access_token)throw new Error("追加認証は成功しましたが、新しい管理者トークンを取得できません。もう一度ログインしてください。");
+    accessToken=verifiedData.access_token;
+    currentUser=verifiedData.user||currentUser;
+    const updated=decodeAdminClaims();
+    if(updated?.aal!=="aal2"||!updated?.session_id||!updated?.sub)throw new Error("追加認証後の認証情報が不完全です。ログアウトして再度ログインしてください。");
+    const verifiedAuthTime=getPasswordAuthTime(updated);
+    if(!Number.isFinite(verifiedAuthTime)||verifiedAuthTime>now+60||now-verifiedAuthTime>12*60*60)throw new Error("管理者セッションの有効期限が切れています。ログアウトして再度ログインしてください。");
+    const userResponse=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+accessToken},cache:"no-store"});
+    if(!userResponse.ok)throw new Error("追加認証後の管理者アカウントを確認できません。ログアウトして再度ログインしてください。");
+    const verifiedUser=await userResponse.json();
+    if(verifiedUser.id!==updated.sub||verifiedUser.app_metadata?.role!=="admin")throw new Error("このアカウントに管理者権限がありません。管理担当者に確認してください。");
+    currentUser=verifiedUser;
+  })();
+  try{return await ensureRecentMfaPromise;}finally{ensureRecentMfaPromise=null;}
 }
 async function revealMemberLicense(){if(!selectedMember||demoMode)return;const button=$("reveal-member-license");button.disabled=true;try{await ensureRecentMfa();const r=await fetch(API_BASE+"/api/admin-sensitive",{method:"POST",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},body:JSON.stringify({resource_type:"member",resource_id:selectedMember.id}),cache:"no-store"});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"免許証番号を取得できませんでした。");$("member-edit-license-number").value=d.radio_license_number||"";$("member-edit-license-number").readOnly=false;licenseNumberLoaded=true;const row=[...$("member-detail-fields").children].find(x=>x.querySelector("dt")?.textContent==="免許証番号");if(row)row.querySelector("dd").textContent=d.radio_license_number||"未登録";notify("免許証番号の閲覧を記録しました。");}catch(e){$("member-detail-feedback").textContent=e.message;}finally{button.disabled=false;}}
 $("reveal-member-license").addEventListener("click",revealMemberLicense);
